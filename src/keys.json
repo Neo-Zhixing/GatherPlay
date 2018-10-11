@@ -1,0 +1,22 @@
+{
+  "spotify": {
+    "client_id": "724eedf1a4c3476a95e841301556c78a",
+    "callback_url": "http://localhost:5001/gather-play/us-central1/api/spotify/auth",
+    "callback_origin": "http://localhost:5001",
+    "scopes": [
+      "user-read-private",
+      "user-read-email",
+      "user-modify-playback-state",
+      "user-read-currently-playing",
+      "user-read-playback-state"
+    ]
+  },
+  "firebase": {
+    "apiKey": "AIzaSyDTUY4f8FhYaruPWy7s5WpdHdw4aKFUNy4",
+    "databaseURL": "https://gather-play.firebaseio.com",
+    "storageBucket": "gather-play.appspot.com",
+    "authDomain": "gather-play.firebaseapp.com",
+    "messagingSenderId": "866376430322",
+    "projectId": "gather-play"
+  }
+}

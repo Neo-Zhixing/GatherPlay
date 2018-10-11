@@ -1,11 +1,20 @@
 <template>
-  <div ref="auth-container">
+  <v-layout column>
+    <button
+      class="firebaseui-idp-button mdl-button mdl-js-button mdl-button--raised firebaseui-id-idp-button idp-spotify"
+      @click.prevent="spotifyLogin">
+      <span class="firebaseui-idp-icon-wrapper">
+        <img class="firebaseui-idp-icon" src="@/assets/spotify-logo.svg"/>
+      </span>
+      <span class="firebaseui-idp-text firebaseui-idp-text-long">Sign in with Spotify</span>
+      <span class="firebaseui-idp-text firebaseui-idp-text-short">Spotify</span>
+    </button>
     <v-progress-circular intermediate v-if="loading"/>
-  </div>
+  </v-layout>
 </template>
 
 <script>
-import { UILoader } from '@/plugins/firebase'
+import { LoadAuthUI } from '@/plugins/firebase'
 export default {
   name: 'UserLogin',
   data () {
@@ -14,40 +23,30 @@ export default {
     }
   },
   mounted () {
-    UILoader
-      .then(([ui, firebase]) => {
-        const uiConfig = {
-          callbacks: {
-            signInSuccessWithAuthResult: (authResult, redirectUrl) => {
-              // User successfully signed in.
-              // Return type determines whether we continue the redirect automatically
-              // or whether we leave that to developer to handle.
-              return true
-            },
-            uiShown: () => {
-              this.loading = false
-            },
-          },
-          // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
-          signInFlow: 'popup',
-          signInSuccessUrl: '#',
-          signInOptions: [
-            firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-            firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-            firebase.auth.EmailAuthProvider.PROVIDER_ID,
-            firebase.auth.PhoneAuthProvider.PROVIDER_ID
-          ],
-          // Terms of service url.
-          tosUrl: '#',
-          // Privacy policy url.
-          privacyPolicyUrl: '#'
-        }
-        ui.start(this.$refs['auth-container'], uiConfig)
+    LoadAuthUI(this.$el, this.uiShown)
+      .then((authResult, redirectURL) => {
+        console.log('Logged IN!!!')
       })
   },
+  methods: {
+    uiShown () {
+      this.loading = false
+    },
+    spotifyLogin () {
+      this.$store.dispatch('spotify/login')
+    },
+  }
 }
 </script>
 
 <style scoped>
   @import "~firebaseui/dist/firebaseui.css";
+  .idp-spotify,
+  .idp-spotify:hover,
+  .mdl-button.idp-spotify:active,
+  .mdl-button.idp-spotify:focus {
+    background-color: #1DB954;
+    margin-left: auto;
+    margin-right: auto;
+  }
 </style>
