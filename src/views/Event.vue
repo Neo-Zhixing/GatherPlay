@@ -81,14 +81,17 @@ export default {
       if (!this.playingTrack.is_playing) {
         // Request new song
         console.log('Requesting new song')
-        const client = this.$store.getters['spotify/client']
-        client.put('/me/player/play', {
-          uris: [this.doc.playlist[0].uri]
-        }).then(() => {
-          return db.collection('events').doc(this.$route.params.event_id).update({
-            playlist: firebase.firestore.FieldValue.arrayRemove(this.doc.playlist[0])
+        this.$store.getters['spotify/client']
+          .then(client => {
+            return client.put('/me/player/play', {
+              uris: [this.doc.playlist[0].uri]
+            })
           })
-        })
+          .then(() => {
+            return db.collection('events').doc(this.$route.params.event_id).update({
+              playlist: firebase.firestore.FieldValue.arrayRemove(this.doc.playlist[0])
+            })
+          })
       }
     }
   }
