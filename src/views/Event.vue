@@ -15,7 +15,6 @@
  </v-container>
 </template>
 
-
 <script>
 import { db } from '@/plugins/firebase'
 import Playlist from '@/components/Playlist.vue'

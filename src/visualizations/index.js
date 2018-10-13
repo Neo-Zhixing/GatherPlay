@@ -7,7 +7,6 @@ import { Howl, Howler } from 'howler'
 import { Group } from 'three'
 
 export default function (element) {
-
   let camera, scene, renderer, font
   init()
   animate()
@@ -47,7 +46,7 @@ export default function (element) {
     loader.load('/fonts/Neue.json', function (_font) {
       font = _font
       onLoaded()
-    }) //end load function
+    }) // end load function
 
     renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setPixelRatio(1.5)
@@ -141,9 +140,9 @@ export default function (element) {
     group.lastChildren = lyricTexts[lyricTexts.length - 1]
     lyricTextGroups.push(group)
 
-    ////
+    /// /
     lyricTextGroups[0].layoutType = 0
-    ////
+    /// /
 
     lyricTextGroups.forEach(it => buildGroupLayout(it))
   }
@@ -182,16 +181,14 @@ export default function (element) {
 
       // In/out
       if (!it.isSpawned && !it.isFadingIn) {
-
         if (it.lyric.timestamp - playtime < IN_THRESHOLD) {
           it.isSpawned = true
           animateIn(it)
           console.log(it.position)
         }
-
       } else if (it.isSpawned && !it.isFadingOut) {
-        if (lyricTexts[Math.min(i + 1, lyricTexts.length - 1)].lyric.timestamp - playtime < OUT_THRESHOLD
-          || playtime - it.lyric.timestamp > ON_SCREEN_THRESHOLD) {
+        if (lyricTexts[Math.min(i + 1, lyricTexts.length - 1)].lyric.timestamp - playtime < OUT_THRESHOLD ||
+          playtime - it.lyric.timestamp > ON_SCREEN_THRESHOLD) {
           animateOut(it)
         }
       }
@@ -288,7 +285,7 @@ export default function (element) {
     })
 
     var radius = 200
-    var segments = 64 //<-- Increase or decrease for more resolution I guess
+    var segments = 64 // <-- Increase or decrease for more resolution I guess
 
     var circleGeometry = new THREE.CircleGeometry(radius, segments)
     var circle = new THREE.Mesh(circleGeometry, material)
@@ -299,17 +296,17 @@ export default function (element) {
       easing: TWEEN.Easing.Linear.None,
       duration: 2000
     })
-    tween(circle.material,  0, {
+    tween(circle.material, 0, {
       variable: 'opacity',
       easing: TWEEN.Easing.Linear.None,
       duration: 2000,
       callback: function () {
-        scene.remove(circle);
+        scene.remove(circle)
       }
     })
   }
 
-  let lastBeat = -1;
+  let lastBeat = -1
 
   function checkBeat () {
     while (lastBeat < data.beats.length && playtime >= data.beats[lastBeat + 1].start) {
@@ -319,13 +316,13 @@ export default function (element) {
     }
   }
 
-  let lastSection = -1;
+  let lastSection = -1
 
   function checkSection () {
     while (lastSection < data.sections.length && playtime >= data.sections[lastSection + 1].start) {
       lastSection++
       data.beats[lastSection].processed = true
-      console.log("change section")
+      console.log('change section')
     }
   }
 
@@ -361,7 +358,7 @@ export default function (element) {
       duration = options.duration || 2000
     // create the tween
     const tweenVector3 = new TWEEN.Tween(vectorToAnimate)
-      .to({ x: to.x, y: to.y, z: to.z, }, duration)
+      .to({ x: to.x, y: to.y, z: to.z }, duration)
       .easing(easing)
       .onUpdate(function (d) {
         if (options.update) {
@@ -400,5 +397,4 @@ export default function (element) {
     tween.start()
     return tween
   }
-
 }
