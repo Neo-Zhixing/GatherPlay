@@ -89,6 +89,6 @@ export default {
   #visualization-button {
     height:0;
     overflow: visible;
-    margin-top: -70pt;
+    margin-top: -69pt;
   }
 </style>
