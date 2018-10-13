@@ -56,6 +56,9 @@ export default function (element) {
     element.addEventListener('resize', onWindowResize, false)
   } // end init
 
+  this.load = function (analysis, lyrics, time) {
+    console.log('got it!')
+  }
   function onLoaded () {
     let lrcLoaded = false
     let dataLoaded = false

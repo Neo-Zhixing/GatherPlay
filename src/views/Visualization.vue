@@ -58,7 +58,7 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import visualizationDrawer from '@/visualizations'
+import Visualizer from '@/visualizations'
 import { db, auth } from '@/plugins/firebase'
 export default {
   name: 'Visualization',
@@ -66,11 +66,14 @@ export default {
     return {
       joinEvent: '',
       joinEventUsername: '',
+      visualizer: null,
+      playingTrackID: null,
     }
   },
   mounted () {
-    visualizationDrawer(this.$refs['visual'])
-    if (this.$store.state.eventID === null) {
+    this.visualizer = new Visualizer(this.$refs['visual'])
+    this.visualizer.load()
+    if (true/*this.$store.state.eventID === null*/) {
       this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
       this.$store.dispatch('spotify/pullCurrentPlayback')
     } else {
@@ -105,6 +108,24 @@ export default {
       playingTrack: state => state.spotify.playingTrack,
     })
   },
+  watch: {
+    playingTrack () {
+      if (this.playingTrackID === this.playingTrack.item.uri) {
+        // Still playing the previous song
+        return
+      }
+      this.playingTrackID = this.playingTrack.item.uri
+      this.$store.getters['spotify/client']
+        .then(client => {
+          return Promise.all([client.get(`/audio-analysis/${this.playingTrack.item.id}`)])
+        })
+        .then(([analysisResponse]) => {
+          this.visualizer.load()
+          console.log(analysisResponse.data)
+        })
+
+    }
+  }
 }
 </script>
 

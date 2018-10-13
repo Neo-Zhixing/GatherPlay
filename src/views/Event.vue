@@ -77,7 +77,6 @@ export default {
       if (!this.doc || this.doc.playlist.length === 0) {
         return
       }
-      console.log(!this.playingTrack.is_playing)
       if (!this.playingTrack.is_playing) {
         // Request new song
         console.log('Requesting new song')
@@ -89,7 +88,7 @@ export default {
           })
           .then(() => {
             return db.collection('events').doc(this.$route.params.event_id).update({
-              playlist: firebase.firestore.FieldValue.arrayRemove(this.doc.playlist[0])
+              playlist: firebase.firestore.FieldValue.arrayRemove(this.doc.playlist[0]),
             })
           })
       }
