@@ -14,6 +14,9 @@
               <v-list-tile-title v-text="song.name"/>
               <v-list-tile-sub-title v-text="song.artists.map(artist => artist.name).join(', ')"/>
             </v-list-tile-content>
+            <v-list-tile-action v-if="song.proposer === user.uid">
+              <v-btn @click="removeTrack(song)" icon><v-icon>delete</v-icon></v-btn>
+            </v-list-tile-action>
           </v-list-tile>
           <v-divider :key="song.uri + ':divider'"/>
         </template>
@@ -78,12 +81,23 @@ export default {
       })
     },
     addTrack () {
+      this.trackSearch.result.proposer = this.user.uid
       db.collection('events').doc(this.event).update({
         playlist: firebase.firestore.FieldValue.arrayUnion(this.trackSearch.result)
       })
       this.trackSearch.result = null
+    },
+    removeTrack (track) {
+      db.collection('events').doc(this.event).update({
+        playlist: firebase.firestore.FieldValue.arrayRemove(track)
+      })
     }
-  }
+  },
+  computed: {
+    user () {
+      return this.$store.state.user
+    },
+  },
 }
 </script>
 

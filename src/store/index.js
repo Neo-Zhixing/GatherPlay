@@ -17,7 +17,7 @@ auth.onAuthStateChanged(user => {
 
 const store = new Vuex.Store({
   state: {
-    user: null,
+    user: auth.currentUser,
   },
   mutations: {
     changeAuthState (state, user) {
