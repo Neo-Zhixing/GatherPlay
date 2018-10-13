@@ -15,15 +15,14 @@ export default function (element) {
   let visualizationDataLoaded = false
   let lyricTexts = []
   let lyricTextGroups = []
+  let currentLyric = null
   let currentGroup = null
+  let lookingAtLyric = null
   let playtime = 0
 
   let data = []
 
   let useLrcSections = false
-  const IN_THRESHOLD = 0.5
-  const OUT_THRESHOLD = 1.25
-  const ON_SCREEN_THRESHOLD = 6
   const DEFAULT_EASING_TYPE = TWEEN.Easing.Quadratic.InOut
   const DEFAULT_EASING_DURATION = 800
   const LYRIC_GROUP_THRESHOLD = 10
@@ -110,6 +109,7 @@ export default function (element) {
     const text = new THREE.Mesh(geometry, getDefaultMaterial())
     text.position.z = 0
     text.visible = false
+    text.material.depthTest = false
 
     // Align to center
     const xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x)
@@ -120,6 +120,9 @@ export default function (element) {
     text.inOutAnim = 0
     text.onScreenAnim = 0
     text.geometry = geometry
+    text.inThreshold = 0.5
+    text.outThreshold = 1.25
+    text.onScreenThresHold = 6
 
     if (isWhitespace(lyric.text)) {
       useLrcSectionsConfidence++
@@ -215,10 +218,6 @@ export default function (element) {
       }
     })
 
-    ////
-    lyricTextGroups[0].layoutType = 1
-    ////
-
     i = 0
     lyricTextGroups.forEach(group => {
       console.log('Group #' + i++)
@@ -227,29 +226,63 @@ export default function (element) {
     })
   }
 
+  var totalChorusLayout = 1
+  var totalVerseLayout = 2
+  var currentChorusLayout = 0
+  var currentVerseLayout = totalChorusLayout + 1
+
   function buildGroupLayout (group) {
     if (isChorus(group)) {
-      group.layoutType = 0
+      group.layoutType = currentChorusLayout
+      currentChorusLayout++
+      if (currentChorusLayout === totalChorusLayout) currentChorusLayout = 0
     } else {
-      group.layoutType = 1
+      group.layoutType = currentVerseLayout
+      currentVerseLayout++
+      if (currentVerseLayout === totalVerseLayout + totalChorusLayout) currentVerseLayout = totalChorusLayout
     }
 
-    switch (group.layoutType) {
-      case 0:
-        break
-      case 1:
-        let left = true
-        const dry = 0.314
-        const margin = 20
-        let totalHeight = 0
-        group.children.forEach(text => {
-          text.rotation.set(text.rotation.x, text.rotation.y + left ? dry : -dry, text.rotation.z)
-          const width = text.geometry.boundingBox.max.x - text.geometry.boundingBox.min.x // TODO
-          const height = text.geometry.boundingBox.max.y - text.geometry.boundingBox.min.y
-          totalHeight += height + margin
-          text.position.set(text.position.x + (width / 1500) * 150 * (left ? 1 : -1), text.position.y, -300)
-          left = !left
-        })
+    if (group.layoutType === 0) {
+      group.children.forEach(text => {
+        text.position.set(text.position.x, text.position.y, -200)
+        text.onScreenAnim = 1
+      })
+    } else if (group.layoutType === 1) {
+      let left = true
+      const dry = 0.314
+      const margin = 20
+      let totalHeight = 0
+      group.children.forEach(text => {
+        text.rotation.set(text.rotation.x, text.rotation.y + left ? dry : -dry, text.rotation.z)
+        const width = text.geometry.boundingBox.max.x - text.geometry.boundingBox.min.x
+        const height = text.geometry.boundingBox.max.y - text.geometry.boundingBox.min.y
+        totalHeight += height + margin
+        text.position.set(text.position.x + (width / 1500) * 150 * (left ? 1 : -1), text.position.y, -300)
+        left = !left
+
+        text.onScreenAnim = 1
+      })
+    } else if (group.layoutType === 2) {
+      let left = true
+      const margin = 100
+      let totalHeight = 0
+      let j = 0
+      group.children.forEach(text => {
+        const width = text.geometry.boundingBox.max.x - text.geometry.boundingBox.min.x
+        const height = text.geometry.boundingBox.max.y - text.geometry.boundingBox.min.y
+        text.position.set(text.position.x + (width / 4 * (left ? -1 : 1)) + (left ? 75 : -75), text.position.y - totalHeight, -400)
+        totalHeight += height + margin
+        left = !left
+
+        text.inThreshold = 0.5
+        text.outThreshold = (j < group.children.length - 1) ? (1.25 - 2) : 1.25
+        text.onScreenThresHold = 6 + 2
+        text.onScreenAnim = 0
+        text.inOutAnim = 1
+
+        j++
+      })
+      group.totalHeight = totalHeight
     }
 
     scene.add(group)
@@ -264,17 +297,18 @@ export default function (element) {
 
       // In/out
       if (!it.isSpawned && !it.isFadingIn) {
-        if (it.lyric.timestamp - playtime < IN_THRESHOLD) {
+        if (it.lyric.timestamp - playtime < it.inThreshold) {
           it.isSpawned = true
           it.visible = true
 
+          currentLyric = it
           currentGroup = it.group
 
           animateIn(it)
         }
       } else if (it.isSpawned && !it.isFadingOut) {
-        if (lyricTexts[Math.min(i + 1, lyricTexts.length - 1)].lyric.timestamp - playtime < OUT_THRESHOLD ||
-          playtime - it.lyric.timestamp > ON_SCREEN_THRESHOLD) {
+        if (lyricTexts[Math.min(i + 1, lyricTexts.length - 1)].lyric.timestamp - playtime < it.outThreshold ||
+          playtime - it.lyric.timestamp > it.onScreenThresHold) {
           animateOut(it)
         }
       }
@@ -296,77 +330,79 @@ export default function (element) {
 
   function animateIn (text) {
     text.isFadingIn = true
-    switch (text.inOutAnim) {
-      case 0:
-        const to = new Vector3(text.position.x, text.position.y, text.position.z)
-        text.position.set(text.position.x, text.position.y - 25, text.position.z)
+    let to = new Vector3(text.position.x, text.position.y, text.position.z)
 
-        animateVector3(text.position, to, {
-          easing: DEFAULT_EASING_TYPE,
-          duration: DEFAULT_EASING_DURATION,
-        })
+    // Store original location
+    text.originalPosition = new Vector3()
+    text.getWorldPosition(text.originalPosition)
 
-        tween(text.material, 1, {
-          variable: 'opacity',
-          easing: DEFAULT_EASING_TYPE,
-          duration: DEFAULT_EASING_DURATION,
-          callback: function () {
-            text.isFadingIn = false
-          }
-        })
-        break
+    if (text.inOutAnim === 0) {
+      text.position.set(text.position.x, text.position.y - 25, text.position.z)
+    } else if (text.inOutAnim === 1) {
+      text.position.set(text.position.x - 100, text.position.y, text.position.z)
     }
+    animateVector3(text.position, to, {
+      easing: DEFAULT_EASING_TYPE,
+      duration: DEFAULT_EASING_DURATION,
+    })
+
+    tween(text.material, 1, {
+      variable: 'opacity',
+      easing: DEFAULT_EASING_TYPE,
+      duration: DEFAULT_EASING_DURATION,
+      callback: function () {
+        text.isFadingIn = false
+      }
+    })
   }
 
   function animateOut (text) {
     text.isFadingOut = true
-    switch (text.inOutAnim) {
-      case 0:
-        const to = new Vector3(text.position.x, text.position.y + 25, text.position.z)
-
-        animateVector3(text.position, to, {
-          easing: DEFAULT_EASING_TYPE,
-          duration: DEFAULT_EASING_DURATION,
-        })
-
-        tween(text.material, 0, {
-          variable: 'opacity',
-          easing: DEFAULT_EASING_TYPE,
-          duration: DEFAULT_EASING_DURATION,
-          update: function () {
-            if (!text.isKilled && text.position.distanceTo(to) < 2) {
-              text.isFadingOut = false
-              text.isKilled = true
-              text.visible = false
-              text.position.set(0, 0, 1000)
-
-              scene.remove(text)
-            }
-          },
-        })
-        break
+    let to
+    if (text.inOutAnim === 0) {
+      to = new Vector3(text.position.x, text.position.y + 25, text.position.z)
+    } else if (text.inOutAnim === 1) {
+      to = new Vector3(text.position.x + 100, text.position.y, text.position.z)
     }
+    animateVector3(text.position, to, {
+      easing: DEFAULT_EASING_TYPE,
+      duration: DEFAULT_EASING_DURATION,
+    })
+
+    tween(text.material, 0, {
+      variable: 'opacity',
+      easing: DEFAULT_EASING_TYPE,
+      duration: DEFAULT_EASING_DURATION,
+      update: function () {
+        if (!text.isKilled && text.position.distanceTo(to) < 2) {
+          text.isFadingOut = false
+          text.isKilled = true
+          text.visible = false
+          text.position.set(0, 0, 1000)
+
+          scene.remove(text)
+        }
+      },
+    })
   }
 
   function animateOnScreen (text) {
-    switch (text.onScreenAnim) {
-      case 0:
-        text.scale.set(text.scale.x + 0.0005, text.scale.y + 0.0005, text.scale.z)
-        break
+    if (text.onScreenAnim === 0) {
+
+    } else if (text.onScreenAnim === 1) {
+      text.scale.set(text.scale.x + 0.001, text.scale.y + 0.001, text.scale.z)
     }
   }
 
   function animateGroup (group) {
-    switch (group.layoutType) {
-      case 0:
-        break
-      case 1:
-        /*group.position.set(
-          group.position.x,
-          (playtime - group.firstChildren.lyric.timestamp) / (group.lastChildren.lyric.timestamp - group.firstChildren.lyric.timestamp) * group.totalHeight - 140,
-          group.position.z
-        )*/
-        break
+    if (group.layoutType === 0) {
+    } else if (group.layoutType === 1) {
+    } else if (group.layoutType === 2) {
+      group.position.set(
+        group.position.x,
+        (playtime - group.firstChildren.lyric.timestamp) / (group.lastChildren.lyric.timestamp - group.firstChildren.lyric.timestamp) * group.totalHeight - 150,
+        group.position.z
+      )
     }
   }
 
@@ -431,10 +467,34 @@ export default function (element) {
     render()
   }
 
+  let completedTween = true
+
   function render () {
     renderer.render(scene, camera)
     if (visualizationDataLoaded) {
       renderLyricTexts()
+      if (currentLyric != null && lookingAtLyric !== currentLyric) {
+        lookingAtLyric = currentLyric
+        const from = new THREE.Quaternion().copy(camera.quaternion)
+
+        camera.lookAt(lookingAtLyric.originalPosition)
+
+        const to = new THREE.Quaternion().copy(camera.quaternion)
+
+        camera.quaternion.set(from._x, from._y, from._z, from._w);
+
+        completedTween = false
+
+        new TWEEN.Tween(camera.quaternion)
+          .to(to, 1000)
+          .easing(TWEEN.Easing.Quadratic.InOut)
+          .onComplete(data => {
+            completedTween = true
+          })
+          .start()
+      } else if (completedTween) {
+
+      }
     }
   }
 
