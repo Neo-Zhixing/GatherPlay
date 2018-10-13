@@ -116,6 +116,9 @@ export default {
     user () {
       return this.$store.state.user
     },
+    ...mapState({
+      playingTrack: state => state.spotify.playingTrack,
+    })
   },
 }
 </script>

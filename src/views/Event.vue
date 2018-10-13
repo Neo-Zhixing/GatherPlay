@@ -42,20 +42,24 @@ export default {
     const docRef = db.collection('events').doc(this.$route.params.event_id)
     docRef.get()
       .then(doc => {
-        this.loading = false
-        if (doc.exists) {
-          this.doc = doc.data()
-        } else {
-          this.doc = false
+
+        if (!doc.exists) {
+          this.loading = false
           return
         }
         this.$store.commit('changeEvent', this.$route.params.event_id)
+        if (!this.user) {
+          this.$router.replace('/')
+          return
+        }
+        this.doc = doc.data()
         if (this.doc.host === this.user.uid) {
           this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
           this.$store.dispatch('spotify/pullCurrentPlayback')
         } else {
           this.$store.commit('spotify/setPlayingTrackPullInterval', null)
         }
+        this.loading = false
       })
     docRef
       .onSnapshot(doc => {

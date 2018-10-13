@@ -23,7 +23,7 @@
 export default {
   name: 'PageNotFound',
   methods: {
-    bringMeBack: function() {
+    bringMeBack () {
       this.$router.go(-1)
     }
   }
