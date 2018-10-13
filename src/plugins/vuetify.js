@@ -12,6 +12,9 @@ import {
   VProgressCircular,
   VDialog,
   VCard,
+  VDivider,
+  VAutocomplete,
+  VSubheader,
   transitions
 } from 'vuetify'
 import 'vuetify/src/stylus/app.styl'
@@ -29,6 +32,9 @@ Vue.use(Vuetify, {
     VProgressCircular,
     VDialog,
     VCard,
+    VDivider,
+    VAutocomplete,
+    VSubheader,
     transitions
   },
   theme: {

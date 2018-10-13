@@ -1,5 +1,12 @@
 import keys from '@/keys.json'
 import firebase from '@/plugins/firebase'
+import axios from 'axios'
+
+export const client = axios.create({
+  baseURL: 'https://api.spotify.com/v1/',
+  timeout: 1000,
+  headers: {},
+})
 
 export default {
   namespaced: true,
@@ -7,8 +14,8 @@ export default {
     authData: null,
   },
   mutations: {
-    createAuthData (data) {
-      this.authData = data
+    createAuthData (state, data) {
+      state.authData = data
     }
   },
   actions: {
@@ -34,5 +41,10 @@ export default {
       window.addEventListener('message', spotifyLoginCallback, false)
     },
   },
-  getters: {},
+  getters: {
+    client (state) {
+      client.defaults.headers['Authorization'] = state.authData['token_type'] + ' ' + state.authData['access_token']
+      return client
+    }
+  },
 }

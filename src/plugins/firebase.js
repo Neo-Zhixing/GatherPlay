@@ -3,8 +3,8 @@ import firebaseui from 'firebaseui'
 import keys from '@/keys.json'
 
 import 'firebase/auth'
-/*
 import 'firebase/firestore'
+/*
 import 'firebase/messaging'
 import 'firebase/functions'
 import 'firebase/messaging'
@@ -12,6 +12,16 @@ import 'firebase/messaging'
 firebase.initializeApp(keys.firebase)
 
 export default firebase
+
+export const db = firebase.firestore()
+
+const dbSettings = {
+  timestampsInSnapshots: true,
+}
+
+db.settings(dbSettings)
+
+export const auth = firebase.auth()
 
 export const AuthUI = new firebaseui.auth.AuthUI(firebase.auth())
 
