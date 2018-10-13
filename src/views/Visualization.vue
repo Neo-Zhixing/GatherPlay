@@ -18,6 +18,7 @@
                   <v-text-field
                     placeholder="Party ID"
                   ></v-text-field>
+
                   <v-chip
                     color = "primary" text-color="white"
                   >Join</v-chip>
