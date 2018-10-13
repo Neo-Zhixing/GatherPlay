@@ -4,24 +4,30 @@
     </div>
     <v-layout row align-end >
       <v-menu pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
-        <v-chip
+        <v-btn
           slot="activator"
           color="primary" text-color="white"
         >
           Join An Event
-        </v-chip>
+        </v-btn>
         <v-card>
+          <v-card-title>Join an event</v-card-title>
           <v-card-text>
-            Join an event
-            <v-layout row>
               <v-text-field
                 placeholder="Party ID"
+                v-model="joinEvent"
               ></v-text-field>
-              <v-chip
-                color = "primary" text-color="white"
-              >Join</v-chip>
-            </v-layout>
+              <v-text-field
+                placeholder="Your Name"
+                v-model="joinEventUsername"
+              ></v-text-field>
           </v-card-text>
+          <v-card-actions>
+            <v-btn flat @click="joinEventAnonymous"
+                   color = "primary" text-color="white"
+                   :disabled = "joinEvent == '' || joinEventUsername == ''"
+            >Join</v-btn>
+          </v-card-actions>
         </v-card>
       </v-menu>
       <v-menu v-if="user" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
@@ -53,10 +59,13 @@
 <script>
 import { mapActions, mapState } from 'vuex'
 import visualizationDrawer from '@/visualizations'
+import { db, auth } from '@/plugins/firebase'
 export default {
   name: 'Visualization',
   data () {
     return {
+      joinEvent: '',
+      joinEventUsername: '',
     }
   },
   mounted () {
@@ -72,10 +81,27 @@ export default {
     ...mapActions({
       login: 'spotify/login',
     }),
+    joinEventAnonymous () {
+      db.collection('events').doc(this.joinEvent).get()
+        .then(doc => {
+          if (!doc.exists) {
+            this.joinEvent = ''
+            return
+          }
+          auth.signInAnonymously().then(response => {
+            return response.user.updateProfile({
+              displayName: this.joinEventUsername,
+            })
+          }).then(() => {
+            this.$router.push({ name: 'event', params: { event_id: this.joinEvent } })
+          })
+        })
+    },
   },
   computed: {
     ...mapState({
       user: state => state.user,
+      event: state => state.eventID,
       playingTrack: state => state.spotify.playingTrack,
     })
   },
