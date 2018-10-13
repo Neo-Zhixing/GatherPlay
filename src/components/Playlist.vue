@@ -5,6 +5,10 @@
     </v-card-title>
     <v-card-text>
       <v-list>
+        <v-subheader>Currently playing:</v-subheader>
+        <v-list-tile>
+          <h3>{{ playingTrack.name }}</h3>
+        </v-list-tile>
         <v-subheader>
           Upcoming
         </v-subheader>
@@ -58,6 +62,7 @@
 
 <script>
 import firebase, { db } from '@/plugins/firebase'
+import { mapState } from 'vuex'
 export default {
   name: 'Playlist',
   props: {
@@ -85,19 +90,22 @@ export default {
     },
     search (keyword) {
       this.trackSearch.loading = true
-      const client = this.$store.getters['spotify/client']
-      client.get('/search', {
-        params: {
-          q: keyword,
-          type: 'track',
-          limit: 5,
-        }
-      }).then(response => {
-        this.trackSearch.items = response.data.tracks.items
-        this.trackSearch.loading = false
-      }).catch(error => {
-        this.trackSearch.loading = false
-      })
+      this.$store.getters['spotify/client']
+        .then(client => {
+          return client.get('/search', {
+            params: {
+              q: keyword,
+              type: 'track',
+              limit: 5,
+            }
+          })
+        })
+        .then(response => {
+          this.trackSearch.items = response.data.tracks.items
+          this.trackSearch.loading = false
+        }).catch(error => {
+          this.trackSearch.loading = false
+        })
     },
     addTrack () {
       this.trackSearch.result.proposer = this.user.uid
@@ -116,6 +124,9 @@ export default {
     user () {
       return this.$store.state.user
     },
+    ...mapState({
+      playingTrack: state => state.spotify.playingTrack,
+    })
   },
 }
 </script>
