@@ -78,6 +78,8 @@ export default {
       }).then(response => {
         this.trackSearch.items = response.data.tracks.items
         this.trackSearch.loading = false
+      }).catch(error => {
+        this.trackSearch.loading = false
       })
     },
     addTrack () {

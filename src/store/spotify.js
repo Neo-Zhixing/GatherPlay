@@ -2,7 +2,7 @@ import keys from '@/keys.json'
 import firebase from '@/plugins/firebase'
 import axios from 'axios'
 
-export const client = axios.create({
+const client = axios.create({
   baseURL: 'https://api.spotify.com/v1/',
   timeout: 1000,
   headers: {},
@@ -48,7 +48,7 @@ export default {
       }
       window.addEventListener('message', spotifyLoginCallback, false)
     },
-    pullCurrentPlayback({ commit, getters, dispatch, state }) {
+    pullCurrentPlayback ({ commit, getters, dispatch, state }) {
       getters.client.get('/me/player/currently-playing', {}).then(response => {
         commit('updatePlayingTrack', response.data)
         if (state.playingTrackPullInterval === null) {

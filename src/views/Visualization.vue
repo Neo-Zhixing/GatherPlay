@@ -61,8 +61,12 @@ export default {
   },
   mounted () {
     visualizationDrawer(this.$el)
-    this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
-    this.$store.dispatch('spotify/pullCurrentPlayback')
+    if (this.$store.state.eventID === null) {
+      this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
+      this.$store.dispatch('spotify/pullCurrentPlayback')
+    } else {
+      this.$store.commit('spotify/setPlayingTrackPullInterval', null)
+    }
   },
   methods: {
     ...mapActions({

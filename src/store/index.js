@@ -18,11 +18,17 @@ auth.onAuthStateChanged(user => {
 const store = new Vuex.Store({
   state: {
     user: auth.currentUser,
+    eventID: null,
   },
   mutations: {
     changeAuthState (state, user) {
       state.user = user
+    },
+    changeEvent (state, id) {
+      state.eventID = id
     }
+  },
+  actions: {
   },
   modules: {
     spotify: spotify,
