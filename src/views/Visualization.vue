@@ -1,10 +1,11 @@
 <template>
-  <v-container fill-height pa-0 style="background-color: blue">
-    <div id="visualization-container">
-    </div>
-    <v-layout row align-end >
-      <v-menu pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
-        <v-btn
+  <v-container fluid fill-height pa-0 ma-0 overflow-hidden>
+    <v-layout column>
+      <v-layout row id="visualization-container" ref="visual">
+      </v-layout>
+      <v-layout wrap row align-center justify-end id="visualization-button">
+          <v-menu pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
+                      <v-btn
           slot="activator"
           color="primary" text-color="white"
         >
@@ -28,30 +29,29 @@
                    :disabled = "joinEvent == '' || joinEventUsername == ''"
             >Join</v-btn>
           </v-card-actions>
-        </v-card>
-      </v-menu>
-      <v-menu v-if="user" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
-        <v-chip
-          slot="activator"
-          color="green" text-color="white"
-        >
-          Create An Event
-        </v-chip>
-      </v-menu>
-      <v-menu v-else pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
-        <v-chip
-          @click="login"
-          slot="activator"
-          color="orange" text-color="white"
-        >
-          Sign In
-        </v-chip>
-      </v-menu>
-      <v-flex v-if="playingTrack" xs-12 xm-4 offset-xs0 offset-xm 6>
-        <v-chip color="blue" text-color="white">
-          {{playingTrack.item.name}}
-        </v-chip>
-      </v-flex>
+            </v-card>
+          </v-menu>
+          <v-menu v-if="user" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
+            <v-chip
+              slot="activator"
+              color="orange" text-color="white"
+            >
+              Create An Event
+            </v-chip>
+          </v-menu>
+          <v-chip
+            v-else
+            slot="activator"
+            color="green" text-color="white" @click="login"
+          >
+            Sign In
+          </v-chip>
+          <v-chip
+            v-if="playingTrack" color="blue" text-color="white">
+                  {{ playingTrack.item.name }}
+          </v-chip>
+      </v-layout>
+
     </v-layout>
   </v-container>
 </template>
@@ -69,7 +69,7 @@ export default {
     }
   },
   mounted () {
-    visualizationDrawer(this.$el)
+    visualizationDrawer(this.$refs['visual'])
     if (this.$store.state.eventID === null) {
       this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
       this.$store.dispatch('spotify/pullCurrentPlayback')
@@ -110,8 +110,12 @@ export default {
 
 <style scoped>
   #visualization-container {
-    height: 100%;
     width: 100%;
-    background-color: aqua;
+    height:100%;
+  }
+  #visualization-button {
+    height:0;
+    overflow: visible;
+    margin-top: -69pt;
   }
 </style>
