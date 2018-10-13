@@ -1,8 +1,9 @@
 <template>
-  <v-container fill-height pa-0 style="background-color: blue">
-      <div id="visualization-container">
-      </div>
-      <v-layout row align-end >
+  <v-container fluid fill-height pa-0 ma-0 overflow-hidden>
+    <v-layout column>
+      <v-layout row id="visualization-container" ref="visual">
+      </v-layout>
+      <v-layout wrap row align-center justify-end id="visualization-button">
           <v-menu pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
             <v-chip
               slot="activator"
@@ -27,28 +28,27 @@
         <!--
           notSignedIn needs to be modified
         -->
-          <v-menu v-if="notSignedIn" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
+          <v-menu v-if="signedIn" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
             <v-chip
               slot="activator"
               color="orange" text-color="white"
             >
-              Sign In
-            </v-chip>
-          </v-menu>
-          <v-menu v-else pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
-            <v-chip
-              slot="activator"
-              color="green" text-color="white"
-            >
               Create An Event
             </v-chip>
           </v-menu>
-        <v-flex xs-12 xm-4 offset-xs0 offset-xm 6>
-          <v-chip color="blue" text-color="white">
+          <v-chip
+            v-else
+            slot="activator"
+            color="green" text-color="white" @click="login"
+          >
+            Sign In
+          </v-chip>
+          <v-chip
+            v-if="signedIn" color="blue" text-color="white">
             {{ current }}
           </v-chip>
-        </v-flex>
       </v-layout>
+    </v-layout>
   </v-container>
 </template>
 
@@ -58,29 +58,36 @@ export default {
   name: 'Visualization',
   data () {
     return {
-      current: 'aefhaief'
+      current: 'Loading...',
+      signedIn: true,
     }
   },
   mounted () {
-    visualizationDrawer(this.$el)
-    this.current = 'kkk'
+    visualizationDrawer(this.$refs['visual'])
     const client = this.$store.getters['spotify/client']
-    client.get('https://api.spotify.com/v1/me/player/currently-playing',{}).then(response => {
+    client.get('https://api.spotify.com/v1/me/player/currently-playing', {}).then(response => {
       if (response) {
-        console.log('FUCK2')
         this.current = 'Now Playing:' + response.data.item.name + ' - ' + response.data.item.artists[0].name + ', album: ' +
           response.data.item.album.name
       }
     })
-    console.log('FUCK3')
+  },
+  methods: {
+    login () {
+      this.$store.dispatch('spotify/login')
+    }
   }
 }
 </script>
 
 <style scoped>
   #visualization-container {
-    height: 100%;
     width: 100%;
-    background-color: aqua;
+    height:100%;
+  }
+  #visualization-button {
+    height:0;
+    overflow: visible;
+    margin-top: -70pt;
   }
 </style>
