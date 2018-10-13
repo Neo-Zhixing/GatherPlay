@@ -2,7 +2,7 @@ import keys from '@/keys.json'
 import firebase from '@/plugins/firebase'
 import axios from 'axios'
 
-export const client = axios.create({
+const client = axios.create({
   baseURL: 'https://api.spotify.com/v1/',
   timeout: 1000,
   headers: {},
@@ -12,14 +12,22 @@ export default {
   namespaced: true,
   state: {
     authData: null,
+    playingTrack: null,
+    playingTrackPullInterval: 5000,
   },
   mutations: {
     createAuthData (state, data) {
       state.authData = data
+    },
+    updatePlayingTrack (state, data) {
+      state.playingTrack = data
+    },
+    setPlayingTrackPullInterval (state, interval) {
+      state.playingTrackPullInterval = interval
     }
   },
   actions: {
-    login ({ commit }) {
+    login ({ commit, dispatch }) {
       const scopes = keys.spotify.scopes.join(' ')
       const theURL = 'https://accounts.spotify.com/authorize?' +
         'response_type=code&' +
@@ -40,9 +48,21 @@ export default {
       }
       window.addEventListener('message', spotifyLoginCallback, false)
     },
+    pullCurrentPlayback ({ commit, getters, dispatch, state }) {
+      getters.client.get('/me/player/currently-playing', {}).then(response => {
+        commit('updatePlayingTrack', response.data)
+        if (state.playingTrackPullInterval === null) {
+          return
+        }
+        setTimeout(() => {
+          dispatch('pullCurrentPlayback')
+        }, state.playingTrackPullInterval)
+      })
+    }
   },
   getters: {
     client (state) {
+      if (!state.authData) return null
       client.defaults.headers['Authorization'] = state.authData['token_type'] + ' ' + state.authData['access_token']
       return client
     }

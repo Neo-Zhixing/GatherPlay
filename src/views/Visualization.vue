@@ -26,16 +26,14 @@
               </v-card-text>
             </v-card>
           </v-menu>
-        <!--
-          notSignedIn needs to be modified
-        -->
-          <v-menu v-if="signedIn" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
+          <v-menu v-if="user" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
             <v-chip
               slot="activator"
               color="orange" text-color="white"
             >
               Create An Event
             </v-chip>
+      </v-menu>
           </v-menu>
           <v-chip
             v-else
@@ -45,7 +43,7 @@
             Sign In
           </v-chip>
           <v-chip
-            v-if="signedIn" color="blue" text-color="white">
+            v-if="user" color="blue" text-color="white">
             {{ current }}
           </v-chip>
       </v-layout>
@@ -54,30 +52,34 @@
 </template>
 
 <script>
+import { mapActions, mapState } from 'vuex'
 import visualizationDrawer from '@/visualizations'
 export default {
   name: 'Visualization',
   data () {
     return {
-      current: 'Loading...',
-      signedIn: true,
     }
   },
   mounted () {
     visualizationDrawer(this.$refs['visual'])
-    const client = this.$store.getters['spotify/client']
-    client.get('https://api.spotify.com/v1/me/player/currently-playing', {}).then(response => {
-      if (response) {
-        this.current = 'Now Playing:' + response.data.item.name + ' - ' + response.data.item.artists[0].name + ', album: ' +
-          response.data.item.album.name
-      }
-    })
+    if (this.$store.state.eventID === null) {
+      this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
+      this.$store.dispatch('spotify/pullCurrentPlayback')
+    } else {
+      this.$store.commit('spotify/setPlayingTrackPullInterval', null)
+    }
   },
   methods: {
-    login () {
-      this.$store.dispatch('spotify/login')
-    }
-  }
+    ...mapActions({
+      login: 'spotify/login',
+    }),
+  },
+  computed: {
+    ...mapState({
+      user: state => state.user,
+      playingTrack: state => state.spotify.playingTrack,
+    })
+  },
 }
 </script>
 
