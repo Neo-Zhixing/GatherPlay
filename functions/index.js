@@ -13,6 +13,7 @@ admin.initializeApp({
 })
 
 app.get('/spotify/auth', require('./src/spotify/auth').handler)
+app.use('/spotify/requests', require('./src/spotify/requests'));
 
 // Expose Express API as a single Cloud Function:
 exports.api = functions.https.onRequest(app)
