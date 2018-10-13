@@ -60,7 +60,7 @@ export default {
   },
   watch: {
     playingTrack () {
-      if (!this.doc || this.doc.playlist.length == 0) {
+      if (!this.doc || this.doc.playlist.length === 0) {
         return
       }
       console.log(!this.playingTrack.is_playing)

@@ -12,7 +12,11 @@
           <v-list-tile :key="song.uri">
             <v-list-tile-content>
               <v-list-tile-title v-text="song.name"/>
-              <v-list-tile-sub-title v-text="song.artists.map(artist => artist.name).join(', ')"/>
+              <v-list-tile-sub-title>
+                <span v-text="song.artists.map(artist => artist.name).join(', ')"/>
+                <span> - </span>
+                <span v-text="song.album.name"/>
+              </v-list-tile-sub-title>
             </v-list-tile-content>
             <v-list-tile-action v-if="song.proposer === user.uid">
               <v-btn @click="removeTrack(song)" icon><v-icon>delete</v-icon></v-btn>
@@ -33,6 +37,19 @@
         :search-input.sync="trackSearch.keyword"
         v-model="trackSearch.result"
       >
+        <template
+          slot="item"
+          slot-scope="{ item, tile }"
+        >
+          <v-list-tile-content>
+            <v-list-tile-title v-text="item.name"/>
+            <v-list-tile-sub-title>
+              <span v-text="item.artists.map(artist => artist.name).join(', ')"/>
+              <span> - </span>
+              <span v-text="item.album.name"/>
+            </v-list-tile-sub-title>
+          </v-list-tile-content>
+        </template>
       </v-autocomplete>
     </v-card-text>
     <v-btn @click="login">login</v-btn>
