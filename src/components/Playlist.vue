@@ -5,6 +5,10 @@
     </v-card-title>
     <v-card-text>
       <v-list>
+        <v-subheader>Currently playing:</v-subheader>
+        <v-list-tile>
+          <h3>{{ playingTrack.name }}</h3>
+        </v-list-tile>
         <v-subheader>
           Upcoming
         </v-subheader>
