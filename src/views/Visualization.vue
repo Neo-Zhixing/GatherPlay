@@ -33,7 +33,6 @@
             >
               Create An Event
             </v-chip>
-      </v-menu>
           </v-menu>
           <v-chip
             v-else
@@ -43,8 +42,8 @@
             Sign In
           </v-chip>
           <v-chip
-            v-if="user" color="blue" text-color="white">
-            {{ current }}
+            v-if="playingTrack" color="blue" text-color="white">
+                  {{ playingTrack.item.name }}
           </v-chip>
       </v-layout>
     </v-layout>
