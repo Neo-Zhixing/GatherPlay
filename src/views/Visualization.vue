@@ -1,6 +1,7 @@
 <template>
   <v-container fluid fill-height pa-0 ma-0 overflow-hidden>
     <v-layout column>
+      <canvas id="visual-canvas" ref="visual-canvas" style="display: none;"></canvas>
       <v-layout row id="visualization-container" ref="visual">
       </v-layout>
       <v-layout wrap row align-center justify-end id="visualization-button">
@@ -69,7 +70,7 @@ export default {
     }
   },
   mounted () {
-    visualizationDrawer(this.$refs['visual'])
+    visualizationDrawer(this.$refs['visual'], this.$refs['visual-canvas'])
     if (this.$store.state.eventID === null) {
       this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
       this.$store.dispatch('spotify/pullCurrentPlayback')

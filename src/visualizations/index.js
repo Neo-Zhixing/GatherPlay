@@ -5,10 +5,9 @@ import axios from 'axios'
 import Lyrics from 'lyrics.js'
 import { Howl, Howler } from 'howler'
 
-export default function (element) {
+export default function (element, canvas) {
+
   let camera, scene, renderer, font
-  init()
-  animate()
 
   let sound
 
@@ -26,6 +25,17 @@ export default function (element) {
   const DEFAULT_EASING_TYPE = TWEEN.Easing.Quadratic.InOut
   const DEFAULT_EASING_DURATION = 800
   const LYRIC_GROUP_THRESHOLD = 10
+  const CAMERA_INITIAL_Z = 800
+  const CAMERA_VERSE_FOV = 60
+  const CAMERA_CHORUS_FOV = 95
+
+  let themeColor = 0x256eff
+
+  let canvasTexture
+  let ctx
+
+  init()
+  animate()
 
   function getDefaultMaterial () {
     return new THREE.MeshBasicMaterial({
@@ -37,8 +47,8 @@ export default function (element) {
   }
 
   function init () {
-    camera = new THREE.PerspectiveCamera(70, element.clientWidth / element.clientHeight, 1, 10000)
-    camera.position.set(0, 0, 600)
+    camera = new THREE.PerspectiveCamera(CAMERA_VERSE_FOV, element.clientWidth / element.clientHeight, 0.01, 2000)
+    camera.position.set(0, 0, CAMERA_INITIAL_Z)
     scene = new THREE.Scene()
     scene.background = new THREE.Color(0xffffff)
 
@@ -54,6 +64,17 @@ export default function (element) {
 
     element.appendChild(renderer.domElement)
     element.addEventListener('resize', onWindowResize, false)
+
+    ctx = canvas.getContext('2d')
+    canvasTexture = new THREE.CanvasTexture(canvas)
+
+    var material = new THREE.MeshBasicMaterial({ map: canvasTexture })
+
+    var geometry = new THREE.PlaneGeometry(600, 600)
+    var visualPlane = new THREE.Mesh(geometry, material)
+    visualPlane.position.set(0, 0, -2000)
+
+    scene.add(visualPlane)
   } // end init
 
   function onLoaded () {
@@ -86,7 +107,7 @@ export default function (element) {
       src: ['test.mp3']
     })
 
-    sound.seek(8)
+    sound.seek(63)
     sound.play()
     Howler.volume(0.5)
   }
@@ -245,7 +266,9 @@ export default function (element) {
     if (group.layoutType === 0) {
       group.children.forEach(text => {
         text.position.set(text.position.x, text.position.y, -200)
-        text.onScreenAnim = 1
+        text.onScreenAnim = 2
+        text.material.color = new THREE.Color(themeColor)
+        text.material.needsUpdate = true
       })
     } else if (group.layoutType === 1) {
       let left = true
@@ -302,7 +325,10 @@ export default function (element) {
           it.visible = true
 
           currentLyric = it
-          currentGroup = it.group
+          if (currentGroup !== it.group) {
+            currentGroup = it.group
+            onGroup();
+          }
 
           animateIn(it)
         }
@@ -314,7 +340,7 @@ export default function (element) {
       }
 
       // On screen
-      if (it.isSpawned && !it.isKilled) {
+      if (it.isSpawned && !it.isKilled && !it.isFadingIn && !it.isFadingOut) {
         animateOnScreen(it)
       }
     }
@@ -328,20 +354,41 @@ export default function (element) {
     }
   }
 
+  function onGroup() {
+    if (isChorus(currentGroup)) {
+      new TWEEN.Tween(camera.fov)
+        .to(CAMERA_CHORUS_FOV, 800)
+        .easing(TWEEN.Easing.Quintic.InOut)
+        .start()
+    } else {
+      new TWEEN.Tween(camera.fov)
+        .to(CAMERA_VERSE_FOV, 800)
+        .easing(TWEEN.Easing.Quintic.InOut)
+        .start()
+    }
+  }
+
   function animateIn (text) {
     text.isFadingIn = true
-    let to = new Vector3(text.position.x, text.position.y, text.position.z)
+    let toPos = new Vector3(text.position.x, text.position.y, text.position.z)
+    let toRot = new Vector3(text.rotation.x, text.rotation.y, text.rotation.z)
 
     // Store original location
     text.originalPosition = new Vector3()
     text.getWorldPosition(text.originalPosition)
 
     if (text.inOutAnim === 0) {
+      toRot = new Vector3(text.rotation.x + Math.PI / 16, text.rotation.y, text.rotation.z)
       text.position.set(text.position.x, text.position.y - 25, text.position.z)
+      text.rotation.set(text.rotation.x - Math.PI / 6, text.rotation.y, text.rotation.z)
     } else if (text.inOutAnim === 1) {
       text.position.set(text.position.x - 100, text.position.y, text.position.z)
     }
-    animateVector3(text.position, to, {
+    animateVector3(text.position, toPos, {
+      easing: DEFAULT_EASING_TYPE,
+      duration: DEFAULT_EASING_DURATION,
+    })
+    animateVector3(text.rotation, toRot, {
       easing: DEFAULT_EASING_TYPE,
       duration: DEFAULT_EASING_DURATION,
     })
@@ -358,13 +405,20 @@ export default function (element) {
 
   function animateOut (text) {
     text.isFadingOut = true
-    let to
+    let toPos
+    let toRot
     if (text.inOutAnim === 0) {
-      to = new Vector3(text.position.x, text.position.y + 25, text.position.z)
+      toPos = new Vector3(text.position.x, text.position.y + 25, text.position.z)
+      toRot = new Vector3(text.rotation.x - Math.PI / 6 - Math.PI / 16, text.rotation.y, text.rotation.z)
     } else if (text.inOutAnim === 1) {
-      to = new Vector3(text.position.x + 100, text.position.y, text.position.z)
+      toPos = new Vector3(text.position.x + 100, text.position.y, text.position.z)
+      toRot = new Vector3(text.rotation.x, text.rotation.y, text.rotation.z)
     }
-    animateVector3(text.position, to, {
+    animateVector3(text.position, toPos, {
+      easing: DEFAULT_EASING_TYPE,
+      duration: DEFAULT_EASING_DURATION,
+    })
+    animateVector3(text.rotation, toRot, {
       easing: DEFAULT_EASING_TYPE,
       duration: DEFAULT_EASING_DURATION,
     })
@@ -374,7 +428,7 @@ export default function (element) {
       easing: DEFAULT_EASING_TYPE,
       duration: DEFAULT_EASING_DURATION,
       update: function () {
-        if (!text.isKilled && text.position.distanceTo(to) < 2) {
+        if (!text.isKilled && text.position.distanceTo(toPos) < 2) {
           text.isFadingOut = false
           text.isKilled = true
           text.visible = false
@@ -391,6 +445,9 @@ export default function (element) {
 
     } else if (text.onScreenAnim === 1) {
       text.scale.set(text.scale.x + 0.001, text.scale.y + 0.001, text.scale.z)
+    } else if (text.onScreenAnim === 2) {
+      text.scale.set(text.scale.x + 0.001, text.scale.y + 0.001, text.scale.z)
+      text.rotation.set(text.rotation.x, text.rotation.y + 0.001, text.rotation.z)
     }
   }
 
@@ -406,33 +463,49 @@ export default function (element) {
     }
   }
 
+  let current_beat = 0
+
   function spawnPulse () {
     var material = new THREE.MeshBasicMaterial({
-      color: isChorus() ? 0x256eff : 0x000000,
+      color: (current_beat === 0 && isChorus(currentGroup)) ? themeColor : 0x000000,
       transparent: true,
-      opacity: isChorus() ? 0.2 : 0.1,
+      opacity: (isChorus() && current_beat === 0) ? 0.1 : 0.05,
     })
 
-    var radius = 200
-    var segments = 64 // <-- Increase or decrease for more resolution I guess
+    const radius = (isChorus() || current_beat === 0) ? 300 : 150
+    const segments = 64
 
-    var circleGeometry = new THREE.CircleGeometry(radius, segments)
-    var circle = new THREE.Mesh(circleGeometry, material)
-    circle.position.set(0, 0, -250 * (isChorus() ? 0.5 : 1))
+    const circleGeometry = new THREE.CircleGeometry(radius, segments)
+    const circle = new THREE.Mesh(circleGeometry, material)
+    circle.position.set(
+      isChorus() ? 0 : (current_beat === 0 ? getRandomDouble(-1400, 1400) : getRandomDouble(-800, 800)),
+      isChorus() ? -80 : (current_beat === 0 ? getRandomDouble(-1000, 1000) : getRandomDouble(-600, 600)),
+      -250 * (isChorus() ? 0.5 : 1)
+    )
+    circle.rotation.set(
+      circle.rotation.x,
+      circle.rotation.y,
+      circle.rotation.z
+    )
     scene.add(circle)
 
-    animateVector3(circle.position, new Vector3(0, 0, 500 * (isChorus() ? 1.33 : 1)), {
+    animateVector3(circle.position, new Vector3(0, 0, 300 * (isChorus() ? 1.33 : 1)), {
       easing: TWEEN.Easing.Linear.None,
-      duration: 2000
+      duration: 1000
     })
     tween(circle.material, 0, {
       variable: 'opacity',
       easing: TWEEN.Easing.Linear.None,
-      duration: 2000,
+      duration: 1000,
       callback: function () {
         scene.remove(circle)
       }
     })
+
+    current_beat++
+    if (current_beat === data.track.time_signature) {
+      current_beat = 0
+    }
   }
 
   let lastBeat = -1
@@ -473,28 +546,49 @@ export default function (element) {
     renderer.render(scene, camera)
     if (visualizationDataLoaded) {
       renderLyricTexts()
+
       if (currentLyric != null && lookingAtLyric !== currentLyric) {
         lookingAtLyric = currentLyric
-        const from = new THREE.Quaternion().copy(camera.quaternion)
+        const moveFrom = new THREE.Vector3().copy(camera.position)
+        const moveTo = new THREE.Vector3(0, 0, CAMERA_INITIAL_Z)
+        moveTo.x += getRandomDouble(-300, 300)
+        moveTo.y += getRandomDouble(0, -120)
+        moveTo.z += getRandomDouble(0, 160)
 
-        camera.lookAt(lookingAtLyric.originalPosition)
+        const rotateFrom = new THREE.Quaternion().copy(camera.quaternion)
 
-        const to = new THREE.Quaternion().copy(camera.quaternion)
+        const lookTo = new THREE.Vector3().copy(lookingAtLyric.originalPosition)
 
-        camera.quaternion.set(from._x, from._y, from._z, from._w);
+        camera.position.set(moveTo.x, moveTo.y, moveTo.z)
+        camera.lookAt(lookTo)
+
+        const rotateTo = new THREE.Quaternion().copy(camera.quaternion)
+
+        camera.quaternion.set(rotateFrom._x, rotateFrom._y, rotateFrom._z, rotateFrom._w)
+        camera.position.set(moveFrom.x, moveFrom.y, moveFrom.z)
 
         completedTween = false
 
         new TWEEN.Tween(camera.quaternion)
-          .to(to, 1000)
+          .to(rotateTo, 1000)
           .easing(TWEEN.Easing.Quadratic.InOut)
-          .onComplete(data => {
+          .onComplete(() => {
             completedTween = true
           })
           .start()
-      } else if (completedTween) {
+
+        new TWEEN.Tween(camera.position)
+          .to(moveTo, 1000)
+          .easing(TWEEN.Easing.Quadratic.InOut)
+          .start()
+
+      } else if (completedTween && lookingAtLyric != null) {
 
       }
+
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      canvasTexture.needsUpdate = true
     }
   }
 
@@ -549,4 +643,11 @@ export default function (element) {
   function isWhitespace (string) {
     return !string.replace(/\s/g, '').length
   }
+
+  function getRandomDouble (min, max) {
+    return Math.random() * (max - min) + min
+  }
+
+
+
 }
