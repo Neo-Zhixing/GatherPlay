@@ -5,52 +5,51 @@
       <v-layout row id="visualization-container" ref="visual">
       </v-layout>
       <v-layout wrap row align-center justify-end id="visualization-button">
-          <v-menu pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
-                      <v-btn
-          slot="activator"
-          color="primary" text-color="white"
-        >
-          Join An Event
-        </v-btn>
-        <v-card>
-          <v-card-title>Join an event</v-card-title>
-          <v-card-text>
+        <v-btn color="primary" v-if="event" @click="exitEvent">Exit {{event}}</v-btn>
+        <v-menu v-else pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
+          <v-btn
+            slot="activator"
+            color="primary" text-color="white"
+          >
+            Join An Event
+          </v-btn>
+          <v-card>
+            <v-card-title>Join event</v-card-title>
+            <v-card-text>
               <v-text-field
                 placeholder="Party ID"
                 v-model="joinEvent"
               ></v-text-field>
-              <v-text-field
-                placeholder="Your Name"
-                v-model="joinEventUsername"
-              ></v-text-field>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn flat @click="joinEventAnonymous"
-                   color = "primary" text-color="white"
-                   :disabled = "joinEvent == '' || joinEventUsername == ''"
-            >Join</v-btn>
-          </v-card-actions>
-            </v-card>
-          </v-menu>
-          <v-menu v-if="user" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
-            <v-chip
-              slot="activator"
-              color="orange" text-color="white"
-            >
-              Create An Event
-            </v-chip>
-          </v-menu>
-          <v-chip
-            v-else
+            </v-card-text>
+            <v-card-actions>
+              <v-btn flat @click="joinEventAnonymous"
+                     color="primary" text-color="white"
+                     :disabled="joinEvent === ''"
+              >Join
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-menu>
+        <v-menu v-if="spotifyAuthState" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
+          <v-btn
             slot="activator"
-            color="green" text-color="white" @click="login"
+            color="orange" text-color="white"
           >
-            Sign In
-          </v-chip>
-          <v-chip
-            v-if="playingTrack" color="blue" text-color="white">
-                  {{ playingTrack.name }}
-          </v-chip>
+            Create Event
+          </v-btn>
+        </v-menu>
+        <v-btn
+          v-else
+          slot="activator"
+          color="green" text-color="white" @click="login"
+        >
+          Spotify SignIn
+        </v-btn>
+        <v-btn v-if="user || spotifyAuthState" @click="signout">Sign Out</v-btn>
+        <v-chip
+          v-if="playingTrack" color="blue" text-color="white">
+          {{ playingTrack.name }}
+        </v-chip>
       </v-layout>
 
     </v-layout>
@@ -68,17 +67,39 @@ export default {
   data () {
     return {
       joinEvent: '',
-      joinEventUsername: '',
       visualizer: null,
       hello: 0
     }
   },
   mounted () {
     this.visualizer = new Visualizer(this.$refs['visual'], this.$refs['visual-canvas'])
-    this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
-    this.$store.dispatch('spotify/pullCurrentPlayback')
+    this.updateProvider()
+
+    console.log(this.user)
+    if (this.user){
+      console.log(this.user.isAnonymous)
+    }
+
+    console.log(this.event)
   },
   methods: {
+    updateProvider () {
+      if (this.event || this.spotifyAuthState || this.user) {
+        this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
+        this.$store.dispatch('spotify/pullCurrentPlayback')
+      } else {
+        this.$store.commit('spotify/setPlayingTrackPullInterval', null)
+      }
+    },
+    signout () {
+      auth.signOut()
+      this.$store.commit('spotify/createAuthData', null)
+      this.updateProvider()
+    },
+    exitEvent() {
+      this.$store.commit('changeEvent', null)
+      this.updateProvider()
+    },
     ...mapActions({
       login: 'spotify/login',
     }),
@@ -89,11 +110,7 @@ export default {
             this.joinEvent = ''
             return
           }
-          auth.signInAnonymously().then(response => {
-            return response.user.updateProfile({
-              displayName: this.joinEventUsername,
-            })
-          }).then(() => {
+          auth.signInAnonymously().then(() => {
             this.$router.push({ name: 'event', params: { event_id: this.joinEvent } })
           })
         })
@@ -105,6 +122,7 @@ export default {
       event: state => state.eventID,
       playingTrack: state => state.spotify.playingTrack,
       playingProgress: state => state.spotify.progress,
+      spotifyAuthState: state => state.spotify.authData,
     })
   },
   watch: {
@@ -144,10 +162,11 @@ export default {
 <style scoped>
   #visualization-container {
     width: 100%;
-    height:100%;
+    height: 100%;
   }
+
   #visualization-button {
-    height:0;
+    height: 0;
     overflow: visible;
     margin-top: -69pt;
   }
