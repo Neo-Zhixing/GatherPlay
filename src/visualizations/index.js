@@ -12,8 +12,8 @@ export default function (element, canvas) {
 
   let camera, scene, renderer, font
 
-  let startPerformanceTime
   let startPlaytime
+  let startPerformanceTime
 
   let isLoaded = false
   let lyricTexts = []
@@ -84,33 +84,29 @@ export default function (element, canvas) {
   } // end init
 
   this.load = function (analysis, lyrics, time) {
-    if (scene != null) {
-      isLoaded = false
+    if (lyrics != null) {
 
-      renderer.dispose()
-      scene.traverse(object => {
-        if (!object.isMesh) return
-        object.geometry.dispose()
-        if (object.material.isMaterial) {
-          cleanMaterial(object.material)
-        } else {
-          for (const material of object.material) cleanMaterial(material)
-        }
-      })
+      const t = window.performance.now()
 
-      const cleanMaterial = material => {
-        material.dispose()
-        for (const key of Object.keys(material)) {
-          const value = material[key]
-          if (value && typeof value === 'object' && 'minFilter' in value) {
-            value.dispose()
-          }
-        }
+      if (!time) time = 0
+      data = analysis
+      lrc = new Lyrics(lyrics)
+      const delay = (window.performance.now() - t) / 1000
+
+      startPlaytime = time / 1000 + delay
+      startPerformanceTime = window.performance.now()
+
+    }
+
+    if (scene != null || lyrics == null) {
+      console.log("Resetting scene")
+
+      while (scene.children.length > 0) {
+        scene.remove(scene.children[0])
       }
-      scene.dispose()
-      scene = null
-      camera = null
-      renderer = null
+      for (const text in lyricTextGroups) {
+        scene.remove(text)
+      }
 
       lyricTexts = []
       lyricTextGroups = []
@@ -118,28 +114,23 @@ export default function (element, canvas) {
       currentGroup = null
       lookingAtLyric = null
       useLrcSections = false
+
+      useLrcSectionsConfidence = 0
+      currentBeat = 0
+      lastBeat = -1
+      completedTween = true
+
+      onLoaded()
+    } else {
+      setupScene()
+      animate()
     }
-
-    const t = window.performance.now()
-
-    setupScene()
-    animate()
-
-    if (!time) time = 0
-    data = analysis
-
-    lrc = new Lyrics(lyrics)
-
-    const delay = (window.performance.now() - t) / 1000
-
-    startPerformanceTime = window.performance.now()
-    startPlaytime = time + delay
   }
 
   function onLoaded () {
-    window.KALEIDOSYNC = new Kaleidoscope(false)
+    /*window.KALEIDOSYNC = new Kaleidoscope(false)
     window.KALEIDOSYNC.duration = 100
-    window.KALEIDOSYNC.buildSingleState(true)
+    window.KALEIDOSYNC.buildSingleState(true)*/
 
     lrc.getLyrics().forEach(it => spawnLyric(it))
     groupLyrics()
@@ -271,8 +262,6 @@ export default function (element, canvas) {
 
     i = 0
     lyricTextGroups.forEach(group => {
-      console.log('Group #' + i++)
-      console.log(group.avg_loudness)
       buildGroupLayout(group)
     })
   }
@@ -357,7 +346,7 @@ export default function (element, canvas) {
           currentLyric = it
           if (currentGroup !== it.group) {
             currentGroup = it.group
-            onGroup();
+            onGroup()
           }
 
           animateIn(it)
@@ -384,7 +373,7 @@ export default function (element, canvas) {
     }
   }
 
-  function onGroup() {
+  function onGroup () {
     if (isChorus(currentGroup)) {
       new TWEEN.Tween(camera.fov)
         .to(CAMERA_CHORUS_FOV, 800)
@@ -493,23 +482,23 @@ export default function (element, canvas) {
     }
   }
 
-  let current_beat = 0
+  let currentBeat = 0
 
   function spawnPulse () {
     var material = new THREE.MeshBasicMaterial({
-      color: (current_beat === 0 && isChorus(currentGroup)) ? themeColor : 0x000000,
+      color: (currentBeat === 0 && isChorus(currentGroup)) ? themeColor : 0x000000,
       transparent: true,
-      opacity: (isChorus() && current_beat === 0) ? 0.1 : 0.05,
+      opacity: (isChorus() && currentBeat === 0) ? 0.1 : 0.05,
     })
 
-    const radius = (isChorus() || current_beat === 0) ? 300 : 150
+    const radius = (isChorus() || currentBeat === 0) ? 300 : 150
     const segments = 64
 
     const circleGeometry = new THREE.CircleGeometry(radius, segments)
     const circle = new THREE.Mesh(circleGeometry, material)
     circle.position.set(
-      isChorus() ? 0 : (current_beat === 0 ? getRandomDouble(-1400, 1400) : getRandomDouble(-800, 800)),
-      isChorus() ? -80 : (current_beat === 0 ? getRandomDouble(-1000, 1000) : getRandomDouble(-600, 600)),
+      isChorus() ? 0 : (currentBeat === 0 ? getRandomDouble(-1400, 1400) : getRandomDouble(-800, 800)),
+      isChorus() ? -80 : (currentBeat === 0 ? getRandomDouble(-1000, 1000) : getRandomDouble(-600, 600)),
       isChorus() ? 1 : -400
     )
     circle.rotation.set(
@@ -532,9 +521,9 @@ export default function (element, canvas) {
       }
     })
 
-    current_beat++
-    if (current_beat === data.track.time_signature) {
-      current_beat = 0
+    currentBeat++
+    if (currentBeat === data.track.time_signature) {
+      currentBeat = 0
     }
   }
 
@@ -563,8 +552,9 @@ export default function (element, canvas) {
   function animate (time) {
     requestAnimationFrame(animate)
     TWEEN.update(time)
+
     if (isLoaded) {
-      playtime = startPlaytime + (window.performance.now() - playtime) / 1000.0;
+      playtime = startPlaytime + (window.performance.now() - startPerformanceTime) / 1000.0
       checkBeat()
     }
     render()
@@ -616,8 +606,8 @@ export default function (element, canvas) {
 
       }
 
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
       canvasTexture.needsUpdate = true
     }
   }
@@ -677,7 +667,5 @@ export default function (element, canvas) {
   function getRandomDouble (min, max) {
     return Math.random() * (max - min) + min
   }
-
-
 
 }
