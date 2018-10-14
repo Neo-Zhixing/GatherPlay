@@ -102,6 +102,7 @@ export default {
       user: state => state.user,
       event: state => state.eventID,
       playingTrack: state => state.spotify.playingTrack,
+      playingProgress: state => state.spotify.progress,
     })
   },
   watch: {
@@ -116,7 +117,7 @@ export default {
             })
         ])
       }).then(([analysisResponse, lyricsResponse]) => {
-        this.visualizer.load(analysisResponse.data, lyricsResponse.data.lrc.lyric)
+        this.visualizer.load(analysisResponse.data, lyricsResponse.data.lrc.lyric, this.playingProgress)
       })
     }
   }
