@@ -1,7 +1,6 @@
 <template>
   <v-container fluid fill-height pa-0 ma-0 overflow-hidden>
     <v-layout column>
-      <canvas id="kaleidoscope" ref="visual-canvas" style="display: none;"></canvas>
       <v-layout row id="visualization-container" ref="visual">
       </v-layout>
       <v-layout wrap row align-center justify-end id="visualization-button">
@@ -47,7 +46,9 @@
         >
           <img src="@/assets/spotify-logo.svg" height="20"/> <span class="white-text">Sign in with Spotify</span>
         </v-btn>
-        <v-btn v-if="user || spotifyAuthState" @click="signout">Sign Out</v-btn>
+        <v-btn v-if="user || spotifyAuthState" @click="signout" class="transparent-button">Sign Out</v-btn>
+        
+        <v-btn v-if="user || spotifyAuthState" :to="`/event/${ event }`" class="transparent-button">Playlist</v-btn>
       </v-layout>
     </v-layout>
     <div v-if="playingTrack" id="music-meta" v-show="labelVisible">
@@ -216,6 +217,15 @@ export default {
   .white-text {
     color: white;
     padding-left: 8px;
+  }
+
+  .transparent-button {
+    opacity: 0.4;
+    transition: all .25s ease-in-out;
+  }
+
+  .transparent-button:hover {
+    opacity: 1;
   }
   #music-meta {
     padding: 2rem;
