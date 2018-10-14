@@ -119,6 +119,18 @@ export default {
         })
     },
     loadVisualization () {
+
+      if (false) {
+        Promise.all([
+          axios.get("/test.json"),
+          axios.get("/test.lrc")
+        ]).then(([analysisResponse, lyricsResponse]) => {
+          this.visualizer.load(analysisResponse.data, lyricsResponse.data, 78000)
+        })
+
+        return
+      }
+
       if (this.blockEvents) {
         console.log('Visualization Loading Blocked')
         return
@@ -131,15 +143,6 @@ export default {
       if (!this.playing) {
         this.visualizer.load()
         return
-      }
-
-      if (false) {
-        Promise.all([
-          axios.get("/test.json"),
-          axios.get("/test.lrc")
-        ]).then(([analysisResponse, lyricsResponse]) => {
-          this.visualizer.load(analysisResponse.data, lyricsResponse.data, 64000)
-        })
       }
 
       const t0 = performance.now()
