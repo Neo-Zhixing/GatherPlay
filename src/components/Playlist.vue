@@ -65,11 +65,7 @@ import firebase, { db } from '@/plugins/firebase'
 import { mapState } from 'vuex'
 export default {
   name: 'Playlist',
-  props: {
-    event: String,
-    list: Array,
-    playing: Object,
-  },
+  props: ['event', 'list', 'playing'],
   data () {
     return {
       trackSearch: {

@@ -60,6 +60,7 @@
 import { mapActions, mapState } from 'vuex'
 import Visualizer from '@/visualizations'
 import { db, auth } from '@/plugins/firebase'
+import axios from 'axios'
 export default {
   name: 'Visualization',
   data () {
@@ -67,18 +68,12 @@ export default {
       joinEvent: '',
       joinEventUsername: '',
       visualizer: null,
-      playingTrackID: null,
     }
   },
   mounted () {
-    this.visualizer = new Visualizer(this.$refs['visual'])
-    this.visualizer.load()
-    if (this.event === null && this.$store.state.spotify.authData) {
-      this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
-      this.$store.dispatch('spotify/pullCurrentPlayback')
-    } else {
-      this.$store.commit('spotify/setPlayingTrackPullInterval', null)
-    }
+    //this.visualizer = new Visualizer(this.$refs['visual'])
+    this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
+    this.$store.dispatch('spotify/pullCurrentPlayback')
   },
   methods: {
     ...mapActions({
@@ -110,7 +105,19 @@ export default {
   },
   watch: {
     playingTrack () {
-      console.log("observerd")
+      this.$store.getters['spotify/client'].then(client => {
+        return Promise.all([
+          client.get(`/audio-analysis/${this.playingTrack.id}`),
+          axios.get(`https://api.imjad.cn/cloudmusic/?type=search&search_type=1&s=${this.playingTrack.name + ' ' + this.playingTrack.artists.map(artist => artist.name).join(' ')}`)
+            .then(response => {
+              const id = response.data.result.songs[0].id
+              return axios.get(`https://api.imjad.cn/cloudmusic/?type=lyric&id=${id}`)
+            })
+        ])
+      }).then(([analysisResponse, lyricsResponse]) => {
+        console.log(lyricsResponse.data.lrc.lyric)
+        //this.visualizer.load(analysisResponse.data, lyricsResponse.data.lrc.lyric)
+      })
     }
   }
 }
