@@ -79,6 +79,9 @@ export default function (element, canvas) {
     scene.add(visualPlane)
   } // end init
 
+  this.load = function (analysis, lyrics, time) {
+    console.log('got it!')
+  }
   function onLoaded () {
     let lrcLoaded = false
     let dataLoaded = false

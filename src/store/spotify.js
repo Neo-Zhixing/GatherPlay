@@ -4,7 +4,7 @@ import axios from 'axios'
 
 const client = axios.create({
   baseURL: 'https://api.spotify.com/v1/',
-  timeout: 1000,
+  timeout: 10000,
   headers: {},
 })
 
@@ -13,9 +13,17 @@ export default {
   state: {
     authData: null,
     playingTrack: null,
+    playing: null,
+    progress: 0,
     playingTrackPullInterval: 5000,
   },
   mutations: {
+    setPlaying (state, playing) {
+      state.playing = playing
+    },
+    setProgress (state, progress) {
+      state.progress = progress
+    },
     createAuthData (state, data) {
       state.authData = data
     },
@@ -43,7 +51,6 @@ export default {
         }
         window.removeEventListener('message', spotifyLoginCallback, false)
         auth.signInWithCustomToken(event.data.token)
-        console.log(event.data.spotify)
         commit('createAuthData', event.data.spotify)
         if (rootState.eventID) {
           db.collection('events').doc(rootState.eventID).update({
@@ -53,11 +60,22 @@ export default {
       }
       window.addEventListener('message', spotifyLoginCallback, false)
     },
-    pullCurrentPlayback ({ commit, getters, dispatch, state }) {
+    pullCurrentPlayback ({ commit, getters, dispatch, state, rootState }) {
       getters.client.then(client => {
-        console.log(client)
         client.get('/me/player/currently-playing', {}).then(response => {
-          commit('updatePlayingTrack', response.data)
+          const firebaseUpdate = {}
+          if (!state.playingTrack || (response.data.item.id !== state.playingTrack.id)) {
+            commit('updatePlayingTrack', response.data.item)
+            firebaseUpdate.playingTrack = response.data.item
+          }
+          commit('setPlaying', response.data.is_playing)
+          firebaseUpdate.playing = response.data.is_playing
+          commit('setProgress', response.data.progress_ms)
+          firebaseUpdate.playingProgress = response.data.progress_ms
+
+          if (rootState.eventID) {
+            db.collection('events').doc(rootState.eventID).update(firebaseUpdate)
+          }
           if (state.playingTrackPullInterval === null) {
             return
           }
@@ -74,19 +92,16 @@ export default {
         client.defaults.headers['Authorization'] = state.authData['token_type'] + ' ' + state.authData['access_token']
         return Promise.resolve(client)
       } else if (rootState.eventID) {
-        console.log('vvvv')
 
         return db.collection('events').doc(rootState.eventID).get()
           .then(doc => {
-
             if (doc.exists) {
               client.defaults.headers['Authorization'] = 'Bearer ' + doc.data().hostToken
-              return client
             }
-            throw new Error('EventID don\'t exist')
+            return client
           })
       }
-      return Promise.reject(new Error('Neither spotify data nor currently in a event'))
+      return Promise.resolve(client)
     }
   },
 }

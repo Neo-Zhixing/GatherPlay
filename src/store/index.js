@@ -6,7 +6,14 @@ import { auth } from '@/plugins/firebase'
 import spotify from './spotify'
 
 const vuexLocal = new VuexPersistence({
-  storage: window.localStorage
+  storage: window.localStorage,
+  reducer: (state) => ({
+    user: state.user,
+    eventID: state.eventID,
+    spotify: {
+      authData: state.spotify.authData,
+    }
+  }),
 })
 
 Vue.use(Vuex)

@@ -6,8 +6,8 @@
     <v-card-text>
       <v-list>
         <v-subheader>Currently playing:</v-subheader>
-        <v-list-tile>
-          <h3>{{ playingTrack.name }}</h3>
+        <v-list-tile v-if="playing">
+          <h3>{{ playing.name }}</h3>
         </v-list-tile>
         <v-subheader>
           Upcoming
@@ -65,10 +65,7 @@ import firebase, { db } from '@/plugins/firebase'
 import { mapState } from 'vuex'
 export default {
   name: 'Playlist',
-  props: {
-    event: String,
-    list: Array,
-  },
+  props: ['event', 'list', 'playing'],
   data () {
     return {
       trackSearch: {
@@ -124,9 +121,6 @@ export default {
     user () {
       return this.$store.state.user
     },
-    ...mapState({
-      playingTrack: state => state.spotify.playingTrack,
-    })
   },
 }
 </script>

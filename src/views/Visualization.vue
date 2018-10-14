@@ -49,7 +49,7 @@
           </v-chip>
           <v-chip
             v-if="playingTrack" color="blue" text-color="white">
-                  {{ playingTrack.item.name }}
+                  {{ playingTrack.name }}
           </v-chip>
       </v-layout>
 
@@ -59,24 +59,22 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import visualizationDrawer from '@/visualizations'
+import Visualizer from '@/visualizations'
 import { db, auth } from '@/plugins/firebase'
+import axios from 'axios'
 export default {
   name: 'Visualization',
   data () {
     return {
       joinEvent: '',
       joinEventUsername: '',
+      visualizer: null,
     }
   },
   mounted () {
-    visualizationDrawer(this.$refs['visual'], this.$refs['visual-canvas'])
-    if (this.$store.state.eventID === null) {
-      this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
-      this.$store.dispatch('spotify/pullCurrentPlayback')
-    } else {
-      this.$store.commit('spotify/setPlayingTrackPullInterval', null)
-    }
+    //this.visualizer = new Visualizer(this.$refs['visual'])
+    this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
+    this.$store.dispatch('spotify/pullCurrentPlayback')
   },
   methods: {
     ...mapActions({
@@ -106,6 +104,23 @@ export default {
       playingTrack: state => state.spotify.playingTrack,
     })
   },
+  watch: {
+    playingTrack () {
+      this.$store.getters['spotify/client'].then(client => {
+        return Promise.all([
+          client.get(`/audio-analysis/${this.playingTrack.id}`),
+          axios.get(`https://api.imjad.cn/cloudmusic/?type=search&search_type=1&s=${this.playingTrack.name + ' ' + this.playingTrack.artists.map(artist => artist.name).join(' ')}`)
+            .then(response => {
+              const id = response.data.result.songs[0].id
+              return axios.get(`https://api.imjad.cn/cloudmusic/?type=lyric&id=${id}`)
+            })
+        ])
+      }).then(([analysisResponse, lyricsResponse]) => {
+        console.log(lyricsResponse.data.lrc.lyric)
+        //this.visualizer.load(analysisResponse.data, lyricsResponse.data.lrc.lyric)
+      })
+    }
+  }
 }
 </script>
 
