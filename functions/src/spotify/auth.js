@@ -100,7 +100,7 @@ exports.handler = function (request, response) {
         response.send(
           `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body><script>\
 console.log(window.opener);\
-window.opener.postMessage({token:'${customToken}', spotify:${JSON.stringify(spotifyAuthData)}}, '${keys.host}');\
+window.opener.postMessage({token:'${customToken}', spotify:${JSON.stringify(spotifyAuthData)}}, '*');\
 window.close();\
 </script></body></html>`)
         return null

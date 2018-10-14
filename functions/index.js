@@ -12,7 +12,7 @@ admin.initializeApp({
   databaseURL: keys.firebase.databaseURL,
 })
 
-app.get('/spotify/auth', require('./src/spotify/auth').handler)
+app.get('/api/spotify/auth', require('./src/spotify/auth').handler)
 
 // Expose Express API as a single Cloud Function:
 exports.api = functions.https.onRequest(app)

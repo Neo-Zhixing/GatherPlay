@@ -1,8 +1,8 @@
 {
   "spotify": {
     "client_id": "724eedf1a4c3476a95e841301556c78a",
-    "callback_url": "https://lyricly.me/api/spotify/auth",
-    "callback_origin": "https://lyricly.me",
+    "callback_url": "https://us-central1-neotoxin-184809.cloudfunctions.net/function-1",
+    "callback_origin": "https://us-central1-neotoxin-184809.cloudfunctions.net",
     "scopes": [
       "user-read-private",
       "user-read-email",
