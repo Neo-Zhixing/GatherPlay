@@ -71,7 +71,9 @@ export default {
       user: state => state.user,
     }),
     host() {
-      return this.user && this.doc.host === this.user.uid
+      const hostornot = this.user && this.doc.host === this.user.uid
+      console.log('AM I THE HOST?', this.user.uid)
+      return hostornot
     }
   },
   watch: {

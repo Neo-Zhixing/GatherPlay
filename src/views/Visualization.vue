@@ -47,8 +47,8 @@
           <img src="@/assets/spotify-logo.svg" height="20"/> <span class="white-text">Sign in with Spotify</span>
         </v-btn>
         <v-btn v-if="user || spotifyAuthState" @click="signout" class="transparent-button">Sign Out</v-btn>
-        
-        <v-btn v-if="user || spotifyAuthState" :to="`/event/${ event }`" class="transparent-button">Playlist</v-btn>
+
+        <v-btn v-if="event && (user || spotifyAuthState)" :to="`/event/${ event }`" class="transparent-button">Playlist</v-btn>
       </v-layout>
     </v-layout>
     <div v-if="playingTrack" id="music-meta" v-show="labelVisible">
@@ -94,7 +94,7 @@ export default {
   },
   methods: {
     updateProvider () {
-      if (this.event || this.spotifyAuthState || this.user) {
+      if (this.event || this.spotifyAuthState) {
         this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
         this.$store.dispatch('spotify/pullCurrentPlayback')
       } else {
@@ -111,7 +111,6 @@ export default {
       login: 'spotify/login',
     }),
     joinEventAnonymous () {
-
       db.collection('events').doc(this.joinEvent).get()
         .then(doc => {
           if (!doc.exists) {
@@ -119,10 +118,12 @@ export default {
             return
           }
           if (this.user && doc.data().host === this.user.uid && this.spotifyAuthState) {
-            // Is Host
             db.collection('events').doc(this.joinEvent).update({
               hostToken: this.spotifyAuthState.access_token
             })
+            this.$store.commit('changeEvent', this.joinEvent)
+            this.updateProvider()
+            return
           }
           auth.signInAnonymously().then(() => {
             this.$store.commit('changeEvent', this.joinEvent)
