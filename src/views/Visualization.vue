@@ -68,7 +68,8 @@ export default {
     return {
       joinEvent: '',
       visualizer: null,
-      hello: 0
+      hello: 0,
+      blockEvents: false,
     }
   },
   mounted () {
@@ -118,6 +119,14 @@ export default {
         })
     },
     loadVisualization () {
+      if (this.blockEvents) {
+        console.log('Visualization Loading Blocked')
+        return
+      }
+      this.blockEvents = true
+      setTimeout(() => {
+        this.blockEvents = false
+      }, 500)
       console.log('Loading Visualization..', this.playing)
       if (!this.playing) {
         this.visualizer.load()
