@@ -9,7 +9,7 @@
           <v-btn
             slot="activator"
             color="primary" text-color="white"
-            class="ma-0"
+            class="ma-0 mr-2"
           >
             Join a party
           </v-btn>
@@ -34,7 +34,7 @@
           <v-btn
             slot="activator"
             color="orange" text-color="white"
-            class="ma-0"
+            class="ma-0 mr-2"
           >
             Create a party
           </v-btn>
@@ -43,7 +43,7 @@
           v-else-if="!user && !event"
           slot="activator"
           color="green" text-color="white" @click="login"
-          class="ma-0"
+          class="ma-0 mr-2"
         >
           <img src="@/assets/spotify-logo.svg" height="20"/> <span class="white-text">Sign in with Spotify</span>
         </v-btn>

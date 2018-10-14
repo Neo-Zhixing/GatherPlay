@@ -557,7 +557,14 @@ export default function (element, canvas) {
     for (let i = 0; i < lyricTextGroups.length; i++) {
       const group = lyricTextGroups[i]
 
-      if (!group.firstChildren.isSpawned || group.lastChildren.isKilled) continue
+      if (group.lastChildren.isKilled) continue
+      let anySpawn = false
+      group.children.forEach(it => {
+        if (it.isSpawned) {
+          anySpawn = true
+        }
+      })
+      if (!anySpawn) continue
 
       animateGroup(group)
     }
@@ -754,7 +761,7 @@ export default function (element, canvas) {
   }
 
   function spawnPulse () {
-    const tempoMultiplier = 100.0 / data.track.tempo * (isChorus() ? 1 : 1.5)
+    const tempoMultiplier = 100.0 / data.track.tempo * (isChorus() ? 1.5 : 3)
 
     const material = new THREE.MeshBasicMaterial({
       color: (currentBeat === 0 && isChorus(currentGroup)) ? darkColor : primaryColor,
@@ -770,7 +777,7 @@ export default function (element, canvas) {
     circle.position.set(
       isChorus() ? 0 : (currentBeat === 0 ? getRandomDouble(-1800, 1800) : getRandomDouble(-1400, 1400)),
       isChorus() ? -80 : (currentBeat === 0 ? getRandomDouble(-1200, 1200) : getRandomDouble(-1000, 1000)),
-      isChorus() ? getRandomDouble(-400, 200) : getRandomDouble(-600, -300)
+      isChorus() ? -300 : getRandomDouble(-600, -300)
     )
     circle.rotation.set(
       circle.rotation.x,
@@ -780,9 +787,9 @@ export default function (element, canvas) {
     scene.add(circle)
 
     animateVector3(circle.position, new Vector3(
-      isChorus() ? 0 : (currentBeat === 0 ? getRandomDouble(-1800, 1800) : getRandomDouble(-1400, 1400)),
-      isChorus() ? -80 : (currentBeat === 0 ? getRandomDouble(-1200, 1200) : getRandomDouble(-1000, 1000)),
-      isChorus() ? getRandomDouble(600, 800) : getRandomDouble(-200, 100)), {
+      isChorus() ? 0 : circle.position.x + (currentBeat === 0 ? getRandomDouble(-450, 450) : getRandomDouble(-400, 400)),
+      isChorus() ? -80 : circle.position.y + (currentBeat === 0 ? getRandomDouble(-300, 300) : getRandomDouble(-250, 250)),
+      circle.position.z + isChorus() ? 1000 : getRandomDouble(300, 600), {
       easing: TWEEN.Easing.Linear.None,
       duration: isChorus() ? 1000 : 2000 * tempoMultiplier,
     })
