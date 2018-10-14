@@ -775,8 +775,8 @@ export default function (element, canvas) {
     const circleGeometry = new THREE.CircleGeometry(radius, segments)
     const circle = new THREE.Mesh(circleGeometry, material)
     circle.position.set(
-      isChorus() ? 0 : (currentBeat === 0 ? getRandomDouble(-1800, 1800) : getRandomDouble(-1400, 1400)),
-      isChorus() ? -80 : (currentBeat === 0 ? getRandomDouble(-1200, 1200) : getRandomDouble(-1000, 1000)),
+      isChorus() ? 0 : (currentBeat === 0 ? getRandomDouble(-900, 900) : getRandomDouble(-700, 700)),
+      isChorus() ? -80 : (currentBeat === 0 ? getRandomDouble(-600, 600) : getRandomDouble(-500, 500)),
       isChorus() ? -300 : getRandomDouble(-600, -300)
     )
     circle.rotation.set(
@@ -792,7 +792,7 @@ export default function (element, canvas) {
       circle.position.z + isChorus() ? 1000 : getRandomDouble(300, 600), {
       easing: TWEEN.Easing.Linear.None,
       duration: isChorus() ? 1000 : 2000 * tempoMultiplier,
-    })
+    }))
 
     tween(circle.material, (isChorus() && currentBeat === 0) ? 0.4 : 0.2, {
       variable: 'opacity',

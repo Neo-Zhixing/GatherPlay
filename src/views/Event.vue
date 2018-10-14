@@ -6,10 +6,9 @@
      <LoadingScreen></LoadingScreen>
    </v-layout>
    <v-layout v-else-if="doc" row wrap id="event-layout">
-     <v-flex sm9 xs12>
+     <v-flex sm12 xs12>
         <playlist :list="doc.playlist" :event="$route.params.event_id" :playing="doc.playingTrack"/>
      </v-flex>
-     <v-flex sm3 xs12>a</v-flex>
    </v-layout>
    <v-layout v-else align-center justify-center column fill-height>
      <!--Error page-->

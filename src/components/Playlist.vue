@@ -1,11 +1,11 @@
 <template>
   <v-card>
-    <v-card-title class="headline font-weight-regular blue-grey white--text">
-      Playlist
+    <v-card-title class="headline font-weight-black white black--text">
+      {{event.toUpperCase()}} Playlist
     </v-card-title>
     <v-card-text>
       <v-list>
-        <v-subheader>Currently playing:</v-subheader>
+        <v-subheader>Now playing</v-subheader>
         <v-list-tile v-if="playing">
           <v-list-tile-avatar tile>
             <img :src="playing.album.images.slice(-1)[0].url"/>
@@ -15,7 +15,7 @@
             <v-list-tile-sub-title>{{ playing.album.name }} by {{ playing.artists.map(a=>a.name).join(', ')}}</v-list-tile-sub-title>
           </v-list-tile-content>
           <v-list-tile-action>
-            <v-btn flat color="orange" @click="skip">Skip</v-btn>
+            <v-btn flat color="black" @click="skip">Skip</v-btn>
           </v-list-tile-action>
         </v-list-tile>
         <v-subheader>

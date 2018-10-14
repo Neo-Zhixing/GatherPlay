@@ -1,4 +1,4 @@
-# gather-play
+# Lyricly
 
 ## Project setup
 ```
