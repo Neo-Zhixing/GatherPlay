@@ -4,6 +4,9 @@ import * as TWEEN from '@tweenjs/tween.js'
 import axios from 'axios'
 import Lyrics from 'lyrics.js'
 import { Howl, Howler } from 'howler'
+import Kaleidoscope from './kaleidoscope'
+
+export let playtime = 0
 
 export default function (element, canvas) {
 
@@ -17,7 +20,6 @@ export default function (element, canvas) {
   let currentLyric = null
   let currentGroup = null
   let lookingAtLyric = null
-  let playtime = 0
 
   let data = []
 
@@ -110,6 +112,10 @@ export default function (element, canvas) {
     sound.seek(63)
     sound.play()
     Howler.volume(0.5)
+
+    window.KALEIDOSYNC = new Kaleidoscope(false)
+    window.KALEIDOSYNC.duration = 100
+    window.KALEIDOSYNC.buildSingleState(true)
   }
 
   function onVisualizationDataLoaded () {
@@ -480,7 +486,7 @@ export default function (element, canvas) {
     circle.position.set(
       isChorus() ? 0 : (current_beat === 0 ? getRandomDouble(-1400, 1400) : getRandomDouble(-800, 800)),
       isChorus() ? -80 : (current_beat === 0 ? getRandomDouble(-1000, 1000) : getRandomDouble(-600, 600)),
-      -250 * (isChorus() ? 0.5 : 1)
+      isChorus() ? 1 : -400
     )
     circle.rotation.set(
       circle.rotation.x,
@@ -489,14 +495,14 @@ export default function (element, canvas) {
     )
     scene.add(circle)
 
-    animateVector3(circle.position, new Vector3(0, 0, 300 * (isChorus() ? 1.33 : 1)), {
+    animateVector3(circle.position, new Vector3(0, 0, isChorus() ? 800 : 0), {
       easing: TWEEN.Easing.Linear.None,
-      duration: 1000
+      duration: isChorus() ? 1000 : 2000
     })
     tween(circle.material, 0, {
       variable: 'opacity',
       easing: TWEEN.Easing.Linear.None,
-      duration: 1000,
+      duration: isChorus() ? 1000 : 2000,
       callback: function () {
         scene.remove(circle)
       }

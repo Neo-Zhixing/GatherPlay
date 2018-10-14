@@ -1,7 +1,7 @@
 <template>
   <v-container fluid fill-height pa-0 ma-0 overflow-hidden>
     <v-layout column>
-      <canvas id="visual-canvas" ref="visual-canvas" style="display: none;"></canvas>
+      <canvas id="kaleidoscope" ref="visual-canvas" style="display: none;"></canvas>
       <v-layout row id="visualization-container" ref="visual">
       </v-layout>
       <v-layout wrap row align-center justify-end id="visualization-button">
