@@ -1,11 +1,12 @@
 <template>
   <v-container>
-    <v-btn to="/" icon>
+    <v-btn href="/" icon>
       <v-icon>arrow_back</v-icon>
     </v-btn>
 
     <v-card class="mt-5">
-      <v-card-title class="headline font-weight-black white black--text ml-3 pt-5" style="font-size: 40px !important; line-height: 1.05 !important;">
+      <v-card-title class="headline font-weight-black white black--text ml-3 pt-5"
+                    style="font-size: 40px !important; line-height: 1.05 !important;">
         {{event.toUpperCase()}} Playlist
       </v-card-title>
       <v-card-text>

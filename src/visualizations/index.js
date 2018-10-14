@@ -46,7 +46,6 @@ export default function (element, canvas) {
 
   let isTitleDisplayed = false
   let titleGroup
-  let errorGroup
   let isLoaded = false
   let lyricTexts = []
   let lyricTextGroups = []
@@ -269,72 +268,10 @@ export default function (element, canvas) {
         if (lyrics != null) {
           onLoaded()
         } else {
-          displayTitle()
+          if (font != null) {
+            displayTitle()
+          }
         }
-      }
-
-      // Nothing's playing?
-      if (analysis === undefined) {
-        errorGroup = new THREE.Group()
-        console.log("Hey")
-
-        let message = "It's a bit quiet in here..."
-        let shapes = font.generateShapes(message, 50)
-        let geometry = new THREE.ShapeGeometry(shapes)
-        geometry.computeBoundingBox()
-        let text = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
-          color: 0x000000,
-          transparent: true,
-          opacity: 1,
-          side: THREE.FrontSide
-        }))
-        text.position.z = 200
-        text.position.y = 30
-
-        let xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x)
-        geometry.translate(xMid, 0, 0)
-
-        errorGroup.add(text)
-
-        message = 'Now you are connected, try playing a song on Spotify.'
-        shapes = font.generateShapes(message, 10)
-        geometry = new THREE.ShapeGeometry(shapes)
-        geometry.computeBoundingBox()
-        text = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
-          color: 0x000000,
-          transparent: true,
-          opacity: 1,
-          side: THREE.FrontSide
-        }))
-        text.position.z = 200
-        text.position.y = 0
-        xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x)
-        geometry.translate(xMid, 0, 0)
-
-        errorGroup.add(text)
-
-        errorGroup.position.y = -20
-        errorGroup.rotation.x = -Math.PI / 16
-
-        scene.add(errorGroup)
-      }
-
-      if (analysis !== undefined && errorGroup != null) {
-        errorGroup.children.forEach(child => {
-          animateVector3(child.position, new Vector3(child.position.x, child.position.y + 350, -1200), {
-            easing: TWEEN.Easing.Quadratic.Out,
-            duration: 500,
-          })
-          tween(child.material, 0, {
-            variable: 'opacity',
-            easing: TWEEN.Easing.Quadratic.Out,
-            duration: 500,
-            callback: function () {
-              reset()
-            }
-          })
-        })
-        errorGroup = null
       }
 
       if (titleGroup != null) {
@@ -831,7 +768,7 @@ export default function (element, canvas) {
   }
 
   function spawnPulse () {
-    const tempoMultiplier = 100.0 / data.track.tempo * (isChorus() ? 1.5 : 3)
+    const tempoMultiplier = 100.0 / data.track.tempo * 3
     const groupMultiplier = currentGroup != null ? ((currentGroup.avg_loudness - data.track.loudness_min) / (data.track.loudness_max - data.track.loudness_min)) : 1;
 
     const material = new THREE.MeshBasicMaterial({
@@ -859,13 +796,13 @@ export default function (element, canvas) {
 
     animateVector3(circle.position, new Vector3(
       isChorus() ? 0 : circle.position.x + (currentBeat === 0 ? getRandomDouble(-450, 450) : getRandomDouble(-400, 400)),
-      isChorus() ? -80 : circle.position.y + (currentBeat === 0 ? getRandomDouble(-300, 300) : getRandomDouble(-250, 250)),
+      isChorus() ? 0 : circle.position.y + (currentBeat === 0 ? getRandomDouble(-300, 300) : getRandomDouble(-250, 250)),
       circle.position.z + isChorus() ? 1000 : getRandomDouble(300, 600), {
-      easing: TWEEN.Easing.Linear.None,
-      duration: isChorus() ? 1000 : 2000 * tempoMultiplier,
-    }))
+        easing: TWEEN.Easing.Linear.None,
+        duration: isChorus() ? 1000 : 2000 * tempoMultiplier,
+      }))
 
-    tween(circle.material, (isChorus() && currentBeat === 0) ? 0.4 : 0.2, {
+    tween(circle.material, 0.2, {
       variable: 'opacity',
       easing: TWEEN.Easing.Linear.None,
       duration: (isChorus() ? 200 : 400) * tempoMultiplier,
