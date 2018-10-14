@@ -96,6 +96,8 @@ export default function (element, canvas) {
       startPlaytime = time / 1000 + delay
       startPerformanceTime = window.performance.now()
 
+    } else {
+      if (scene == null) return;
     }
 
     if (scene != null || lyrics == null) {
