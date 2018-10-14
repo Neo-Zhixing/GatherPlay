@@ -62,6 +62,7 @@ import { mapActions, mapState } from 'vuex'
 import Visualizer from '@/visualizations'
 import { db, auth } from '@/plugins/firebase'
 import axios from 'axios'
+
 export default {
   name: 'Visualization',
   data () {
@@ -69,6 +70,7 @@ export default {
       joinEvent: '',
       joinEventUsername: '',
       visualizer: null,
+      hello: 0
     }
   },
   mounted () {
@@ -107,6 +109,15 @@ export default {
   },
   watch: {
     playingTrack () {
+      if (false) {
+        Promise.all([
+          axios.get("/test.json"),
+          axios.get("/test.lrc")
+        ]).then(([analysisResponse, lyricsResponse]) => {
+          this.visualizer.load(analysisResponse.data, lyricsResponse.data, 64000)
+        })
+      }
+
       const t0 = performance.now()
       this.$store.getters['spotify/client'].then(client => {
         return Promise.all([

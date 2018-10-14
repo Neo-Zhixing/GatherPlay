@@ -8,6 +8,27 @@ import Kaleidoscope from './kaleidoscope'
 
 export let playtime = 0
 
+const pSBC = function (p, from, to) {
+  if(typeof(p)!="number"||p<-1||p>1||typeof(from)!="string"||(from[0]!='r'&&from[0]!='#')||(to&&typeof(to)!="string"))return null; //ErrorCheck
+  const pSBCr=(d)=>{
+    let l=d.length,RGB={};
+    if(l>9){
+      d=d.split(",");
+      if(d.length<3||d.length>4)return null;//ErrorCheck
+      RGB[0]=i(d[0].split("(")[1]),RGB[1]=i(d[1]),RGB[2]=i(d[2]),RGB[3]=d[3]?parseFloat(d[3]):-1;
+    }else{
+      if(l==8||l==6||l<4)return null; //ErrorCheck
+      if(l<6)d="#"+d[1]+d[1]+d[2]+d[2]+d[3]+d[3]+(l>4?d[4]+""+d[4]:""); //3 or 4 digit
+      d=i(d.slice(1),16),RGB[0]=d>>16&255,RGB[1]=d>>8&255,RGB[2]=d&255,RGB[3]=-1;
+      if(l==9||l==5)RGB[3]=r((RGB[2]/255)*10000)/10000,RGB[2]=RGB[1],RGB[1]=RGB[0],RGB[0]=d>>24&255;
+    }
+    return RGB;}
+  var i=parseInt,r=Math.round,h=from.length>9,h=typeof(to)=="string"?to.length>9?true:to=="c"?!h:false:h,b=p<0,p=b?p*-1:p,to=to&&to!="c"?to:b?"#000000":"#FFFFFF",f=pSBCr(from),t=pSBCr(to);
+  if(!f||!t)return null; //ErrorCheck
+  if(h)return "rgb"+(f[3]>-1||t[3]>-1?"a(":"(")+r((t[0]-f[0])*p+f[0])+","+r((t[1]-f[1])*p+f[1])+","+r((t[2]-f[2])*p+f[2])+(f[3]<0&&t[3]<0?")":","+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*10000)/10000:t[3]<0?f[3]:t[3])+")");
+  else return "#"+(0x100000000+r((t[0]-f[0])*p+f[0])*0x1000000+r((t[1]-f[1])*p+f[1])*0x10000+r((t[2]-f[2])*p+f[2])*0x100+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*255):t[3]>-1?r(t[3]*255):f[3]>-1?r(f[3]*255):255)).toString(16).slice(1,f[3]>-1||t[3]>-1?undefined:-2);
+}
+
 export default function (element, canvas) {
 
   let camera, scene, renderer, font
@@ -34,7 +55,7 @@ export default function (element, canvas) {
   const CAMERA_VERSE_FOV = 60
   const CAMERA_CHORUS_FOV = 95
 
-  let themeColor = 0x256eff
+  let themeColor = 0x871b42
 
   let canvasTexture
   let ctx
@@ -59,15 +80,15 @@ export default function (element, canvas) {
     renderer.setSize(element.clientWidth, element.clientHeight)
 
     element.appendChild(renderer.domElement)
-    element.addEventListener('resize', onWindowResize, false)
+    window.addEventListener('resize', onWindowResize, false)
 
     ctx = canvas.getContext('2d')
     canvasTexture = new THREE.CanvasTexture(canvas)
 
-    var material = new THREE.MeshBasicMaterial({ map: canvasTexture })
+    const material = new THREE.MeshBasicMaterial({ map: canvasTexture })
 
-    var geometry = new THREE.PlaneGeometry(600, 600)
-    var visualPlane = new THREE.Mesh(geometry, material)
+    const geometry = new THREE.PlaneGeometry(600, 600)
+    const visualPlane = new THREE.Mesh(geometry, material)
     visualPlane.position.set(0, 0, -2000)
 
     scene.add(visualPlane)
@@ -97,11 +118,11 @@ export default function (element, canvas) {
       startPerformanceTime = window.performance.now()
 
     } else {
-      if (scene == null) return;
+      if (scene == null) return
     }
 
     if (scene != null || lyrics == null) {
-      console.log("Resetting scene")
+      console.log('Resetting scene')
 
       while (scene.children.length > 0) {
         scene.remove(scene.children[0])
@@ -268,10 +289,10 @@ export default function (element, canvas) {
     })
   }
 
-  var totalChorusLayout = 1
-  var totalVerseLayout = 2
-  var currentChorusLayout = 0
-  var currentVerseLayout = totalChorusLayout + 1
+  const totalChorusLayout = 1
+  const totalVerseLayout = 2
+  let currentChorusLayout = 0
+  let currentVerseLayout = totalChorusLayout + 1
 
   function buildGroupLayout (group) {
     if (isChorus(group)) {
@@ -288,7 +309,7 @@ export default function (element, canvas) {
       group.children.forEach(text => {
         text.position.set(text.position.x, text.position.y, -200)
         text.onScreenAnim = 2
-        text.material.color = new THREE.Color(themeColor)
+        text.material.color = new THREE.Color(0xffffff)
         text.material.needsUpdate = true
       })
     } else if (group.layoutType === 1) {
@@ -376,15 +397,66 @@ export default function (element, canvas) {
   }
 
   function onGroup () {
-    if (isChorus(currentGroup)) {
-      new TWEEN.Tween(camera.fov)
-        .to(CAMERA_CHORUS_FOV, 800)
-        .easing(TWEEN.Easing.Quintic.InOut)
-        .start()
-    } else {
-      new TWEEN.Tween(camera.fov)
-        .to(CAMERA_VERSE_FOV, 800)
-        .easing(TWEEN.Easing.Quintic.InOut)
+
+    new TWEEN.Tween(camera.fov)
+      .to(isChorus() ? CAMERA_CHORUS_FOV : CAMERA_VERSE_FOV, 800)
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .start()
+
+    const circleGeometry = new THREE.CircleGeometry(300, 64)
+    const circle = new THREE.Mesh(circleGeometry, new THREE.MeshBasicMaterial({
+      color: isChorus() ? themeColor : 0xffffff,
+      transparent: true,
+      opacity: 0
+    }))
+    circle.position.set(0, 0, -600)
+    circle.rotation.set(
+      circle.rotation.x,
+      circle.rotation.y,
+      circle.rotation.z
+    )
+    scene.add(circle)
+
+    animateVector3(circle.position, new Vector3(0, 0, CAMERA_INITIAL_Z), {
+      easing: TWEEN.Easing.Linear.None,
+      duration: 1000,
+    })
+    tween(circle.material, 1, {
+      variable: 'opacity',
+      easing: TWEEN.Easing.Linear.None,
+      duration: 1000,
+      callback: function () {
+        scene.background = new THREE.Color(isChorus() ? themeColor : 0xffffff)
+        scene.remove(circle)
+      }
+    })
+
+  }
+
+  function onBeat () {
+    spawnPulse()
+
+    if (isChorus(currentGroup) && currentBeat === 0) {
+      const rgb = hexToRgb(themeColor)
+      const color = rgbToHex(rgb.r, rgb.g, rgb.b)
+      const darken = pSBC(-0.4, color)
+
+      console.log(darken)
+      new TWEEN.Tween(new THREE.Color(color))
+        .to(new THREE.Color(darken), 200)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .onUpdate(function (color) {
+          scene.background = color
+        })
+        .onComplete(() => {
+          new TWEEN.Tween(new THREE.Color(darken))
+            .to(new THREE.Color(color), 600)
+            .easing(TWEEN.Easing.Quadratic.In)
+            .onUpdate(function (color) {
+              scene.background = color
+            })
+            .start()
+        })
         .start()
     }
   }
@@ -487,7 +559,7 @@ export default function (element, canvas) {
   let currentBeat = 0
 
   function spawnPulse () {
-    var material = new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshBasicMaterial({
       color: (currentBeat === 0 && isChorus(currentGroup)) ? themeColor : 0x000000,
       transparent: true,
       opacity: (isChorus() && currentBeat === 0) ? 0.1 : 0.05,
@@ -536,7 +608,9 @@ export default function (element, canvas) {
       lastBeat++
       data.beats[lastBeat].processed = true
 
-      if (playtime - data.beats[lastBeat].start < 1) spawnPulse()
+      if (playtime - data.beats[lastBeat].start < 1) {
+        onBeat()
+      }
     }
   }
 
@@ -668,6 +742,23 @@ export default function (element, canvas) {
 
   function getRandomDouble (min, max) {
     return Math.random() * (max - min) + min
+  }
+
+  function hexToRgb (i) {
+    return {
+      r: (i >> 16) & 0xFF,        // or `(i & 0xFF0000) >> 16`
+      g: (i >>  8) & 0xFF,        // or `(i & 0x00FF00) >>  8`
+      b:  i        & 0xFF         // or ` i & 0x0000FF       `
+    };
+  }
+
+  function componentToHex (c) {
+    var hex = c.toString(16)
+    return hex.length === 1 ? '0' + hex : hex
+  }
+
+  function rgbToHex (r, g, b) {
+    return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
   }
 
 }
