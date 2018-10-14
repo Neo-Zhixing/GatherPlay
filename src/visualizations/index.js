@@ -269,6 +269,8 @@ export default function (element, canvas) {
 
         if (lyrics != null) {
           onLoaded()
+        } else {
+          displayTitle()
         }
       }
 
@@ -454,6 +456,21 @@ export default function (element, canvas) {
       currentVerseLayout++
       if (currentVerseLayout === totalVerseLayout + totalChorusLayout) currentVerseLayout = totalChorusLayout
     }
+
+    group.children.forEach(text => {
+      const width = text.geometry.boundingBox.max.x - text.geometry.boundingBox.min.x
+      if (width > 3500) {
+        text.scale.set(text.scale.x * 0.55, text.scale.y * 0.55, text.scale.z)
+      } else if (width > 3000) {
+        text.scale.set(text.scale.x * 0.6, text.scale.y * 0.5, text.scale.z)
+      } else if (width > 2500) {
+        text.scale.set(text.scale.x * 0.65, text.scale.y * 0.65, text.scale.z)
+      } else if (width > 2000) {
+        text.scale.set(text.scale.x * 0.7, text.scale.y * 0.7, text.scale.z)
+      } else if (width > 1500) {
+        text.scale.set(text.scale.x * 0.8, text.scale.y * 0.8, text.scale.z)
+      }
+    })
 
     if (group.layoutType === 0) {
       group.children.forEach(text => {

@@ -9,11 +9,12 @@
           <v-btn
             slot="activator"
             color="primary" text-color="white"
+            class="ma-0"
           >
-            Join An Event
+            Join a party
           </v-btn>
           <v-card>
-            <v-card-title>Join event</v-card-title>
+            <v-card-title>Immediately join a party with its ID.</v-card-title>
             <v-card-text>
               <v-text-field
                 placeholder="Party ID"
@@ -24,23 +25,25 @@
               <v-btn flat @click="joinEventAnonymous"
                      color="primary" text-color="white"
                      :disabled="joinEvent === ''"
-              >Join
+              >OK
               </v-btn>
             </v-card-actions>
           </v-card>
         </v-menu>
-        <v-menu v-if="spotifyAuthState" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
+        <v-menu v-if="spotifyAuthState" offset-y top :close-on-content-click="false" :nudge-width="200">
           <v-btn
             slot="activator"
             color="orange" text-color="white"
+            class="ma-0"
           >
-            Create Event
+            Create a party
           </v-btn>
         </v-menu>
         <v-btn
           v-else-if="!user && !event"
           slot="activator"
           color="green" text-color="white" @click="login"
+          class="ma-0"
         >
           <img src="@/assets/spotify-logo.svg" height="20"/> <span class="white-text">Sign in with Spotify</span>
         </v-btn>
