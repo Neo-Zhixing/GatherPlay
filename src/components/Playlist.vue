@@ -7,13 +7,22 @@
       <v-list>
         <v-subheader>Currently playing:</v-subheader>
         <v-list-tile v-if="playing">
-          <h3>{{ playing.name }}</h3>
+          <v-list-tile-avatar tile>
+            <img :src="playing.album.images.slice(-1)[0].url"/>
+          </v-list-tile-avatar>
+          <v-list-tile-content>
+            <v-list-tile-title>{{ playing.name }}</v-list-tile-title>
+            <v-list-tile-sub-title>{{ playing.album.name }} by {{ playing.artists.map(a=>a.name).join(', ')}}</v-list-tile-sub-title>
+          </v-list-tile-content>
         </v-list-tile>
         <v-subheader>
           Upcoming
         </v-subheader>
         <template v-for="song in list">
           <v-list-tile :key="song.uri">
+            <v-list-tile-avatar tile>
+              <img :src="song.album.images.slice(-1)[0].url"/>
+            </v-list-tile-avatar>
             <v-list-tile-content>
               <v-list-tile-title v-text="song.name"/>
               <v-list-tile-sub-title>
@@ -45,6 +54,9 @@
           slot="item"
           slot-scope="{ item, tile }"
         >
+          <v-list-tile-avatar tile>
+            <img :src="item.album.images.slice(-1)[0].url"/>
+          </v-list-tile-avatar>
           <v-list-tile-content>
             <v-list-tile-title v-text="item.name"/>
             <v-list-tile-sub-title>
@@ -56,7 +68,6 @@
         </template>
       </v-autocomplete>
     </v-card-text>
-    <v-btn @click="login">login</v-btn>
   </v-card>
 </template>
 

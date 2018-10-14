@@ -115,6 +115,7 @@ export default {
           })
         })
     },
+<<<<<<< HEAD
   },
   computed: {
     ...mapState({
@@ -136,6 +137,14 @@ export default {
         })
       }
 
+=======
+    loadVisualization () {
+      console.log('Loading Visualization..', this.playing)
+      if (!this.playing) {
+        this.visualizer.load()
+        return
+      }
+>>>>>>> master
       const t0 = performance.now()
       this.$store.getters['spotify/client'].then(client => {
         return Promise.all([
@@ -152,8 +161,26 @@ export default {
         if (lyricsResponse.data.lrc && lyricsResponse.data.lrc.lyric) {
           lyrics = lyricsResponse.data.lrc.lyric
         }
-        this.visualizer.load(analysisResponse.data, lyrics, this.playingProgress + (t1 - t0))
+        this.visualizer.load(analysisResponse.data, lyrics, this.playingProgress + (t1 - t0), this.playingTrack.album.images[0].url)
       })
+    }
+  },
+  computed: {
+    ...mapState({
+      user: state => state.user,
+      event: state => state.eventID,
+      playingTrack: state => state.spotify.playingTrack,
+      playing: state => state.spotify.playing,
+      playingProgress: state => state.spotify.progress,
+      spotifyAuthState: state => state.spotify.authData,
+    })
+  },
+  watch: {
+    playingTrack () {
+      this.loadVisualization()
+    },
+    playing () {
+      this.loadVisualization()
     }
   }
 }
