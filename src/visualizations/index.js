@@ -1,10 +1,8 @@
 import * as THREE from 'three'
 import { Group, Vector3 } from 'three'
 import * as TWEEN from '@tweenjs/tween.js'
-import axios from 'axios'
 import Lyrics from 'lyrics.js'
-import { Howl, Howler } from 'howler'
-import Kaleidoscope from './kaleidoscope'
+import * as Vibrant from 'node-vibrant'
 
 export let playtime = 0
 
@@ -38,6 +36,8 @@ const pSBC = function (p, from, to) {
 export default function (element, canvas) {
 
   let user
+  let cover
+  let name
 
   let camera, scene, renderer, font
 
@@ -65,9 +65,11 @@ export default function (element, canvas) {
   const CAMERA_INITIAL_Z = 800
   const CAMERA_VERSE_FOV = 60
   const CAMERA_CHORUS_FOV = 95
-  const IN_NEGATIVE_THRESHOLD = -1.5
+  const IN_NEGATIVE_THRESHOLD = -0.2
 
-  let themeColor = 0x871b42
+  let darkColor = '#871b42'
+  let primaryColor = '#000000'
+  let vibrantColor = '#871b42'
 
   let useCanvas = false
   let canvasTexture
@@ -144,7 +146,7 @@ export default function (element, canvas) {
 
       titleGroup.add(text)
 
-      message = user == null ? 'Sign in to get started.' : "Synchronizing..."
+      message = user == null ? 'Sign in to get started.' : 'Synchronizing...'
       shapes = font.generateShapes(message, 10)
       geometry = new THREE.ShapeGeometry(shapes)
       geometry.computeBoundingBox()
@@ -174,8 +176,21 @@ export default function (element, canvas) {
     setupScene()
   }
 
-  this.load = function (analysis, lyrics, time) {
+  this.load = function (analysis, lyrics, time, _cover, _name) {
     isLoaded = false
+    cover = _cover
+    name = _name
+
+    console.log(lyrics)
+
+    if (cover) {
+      Vibrant.from(cover).getPalette()
+        .then((palette) => {
+          darkColor = palette.DarkMuted.getHex()
+          primaryColor = palette.DarkVibrant.getHex()
+          vibrantColor = palette.Vibrant.getHex()
+        })
+    }
 
     if (lyrics != null) {
 
@@ -213,7 +228,7 @@ export default function (element, canvas) {
       )
       scene.add(circle)
 
-      animateVector3(circle.position, new Vector3(0, 0, CAMERA_INITIAL_Z), {
+      animateVector3(circle.position, new Vector3(0, 0, CAMERA_INITIAL_Z * 1.5), {
         easing: TWEEN.Easing.Linear.None,
         duration: 1000,
       })
@@ -231,7 +246,7 @@ export default function (element, canvas) {
     if (scene != null || lyrics == null) {
       console.log('Resetting scene')
 
-      const reset = function() {
+      const reset = function () {
         while (scene.children.length > 0) {
           scene.remove(scene.children[0])
         }
@@ -250,6 +265,7 @@ export default function (element, canvas) {
         currentBeat = 0
         lastBeat = -1
         completedTween = true
+        isLastChorus = false
 
         if (lyrics != null) {
           onLoaded()
@@ -258,7 +274,7 @@ export default function (element, canvas) {
 
       if (titleGroup != null) {
         titleGroup.children.forEach(child => {
-          animateVector3(child.position, new Vector3(child.position.x, child.position.y, 600), {
+          animateVector3(child.position, new Vector3(child.position.x, child.position.y + 350, -1200), {
             easing: TWEEN.Easing.Quadratic.Out,
             duration: 500,
           })
@@ -279,10 +295,6 @@ export default function (element, canvas) {
   }
 
   function onLoaded () {
-    /*window.KALEIDOSYNC = new Kaleidoscope(false)
-    window.KALEIDOSYNC.duration = 100
-    window.KALEIDOSYNC.buildSingleState(true)*/
-
     lrc.getLyrics().forEach(it => spawnLyric(it))
     groupLyrics()
 
@@ -421,6 +433,8 @@ export default function (element, canvas) {
 
     i = 0
     lyricTextGroups.forEach(group => {
+      console.log('Group #' + i++)
+      group.children.forEach(it => console.log(it.lyric.text))
       buildGroupLayout(group)
     })
   }
@@ -532,7 +546,34 @@ export default function (element, canvas) {
     }
   }
 
+  let isLastChorus = false
+
   function onGroup () {
+
+    if (isLastChorus && isChorus()) return
+    if (!isLastChorus && !isChorus()) return
+
+    isLastChorus = isChorus()
+
+    const rotateFrom = new THREE.Quaternion().copy(camera.quaternion)
+
+    const lookTo = new THREE.Vector3()
+
+    camera.lookAt(lookTo)
+
+    const rotateTo = new THREE.Quaternion().copy(camera.quaternion)
+
+    camera.quaternion.set(rotateFrom._x, rotateFrom._y, rotateFrom._z, rotateFrom._w)
+
+    new TWEEN.Tween(camera.quaternion)
+      .to(rotateTo, 1000)
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .start()
+
+    new TWEEN.Tween(camera.position)
+      .to(moveTo, 1000)
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .start()
 
     new TWEEN.Tween(camera.fov)
       .to(isChorus() ? CAMERA_CHORUS_FOV : CAMERA_VERSE_FOV, 800)
@@ -541,7 +582,7 @@ export default function (element, canvas) {
 
     const circleGeometry = new THREE.CircleGeometry(300, 64)
     const circle = new THREE.Mesh(circleGeometry, new THREE.MeshBasicMaterial({
-      color: isChorus() ? themeColor : 0xffffff,
+      color: isChorus() ? darkColor : '#ffffff',
       transparent: true,
       opacity: 0
     }))
@@ -553,18 +594,20 @@ export default function (element, canvas) {
     )
     scene.add(circle)
 
-    animateVector3(circle.position, new Vector3(0, 0, CAMERA_INITIAL_Z), {
+    animateVector3(circle.position, new Vector3(0, 0, CAMERA_INITIAL_Z * 1.5), {
       easing: TWEEN.Easing.Linear.None,
       duration: 1000,
+      update: function (d) {
+        if (circle.position.z - camera.position.z > -10) {
+          scene.background = new THREE.Color(isChorus() ? vibrantColor : '#ffffff')
+          scene.remove(circle)
+        }
+      }
     })
     tween(circle.material, 1, {
       variable: 'opacity',
       easing: TWEEN.Easing.Linear.None,
-      duration: 1000,
-      callback: function () {
-        scene.background = new THREE.Color(isChorus() ? themeColor : 0xffffff)
-        scene.remove(circle)
-      }
+      duration: 1000
     })
 
   }
@@ -575,11 +618,10 @@ export default function (element, canvas) {
     spawnPulse()
 
     if (isChorus(currentGroup) && currentBeat === 0) {
-      const rgb = hexToRgb(themeColor)
+      const rgb = hexToRgb(vibrantColor)
       const color = rgbToHex(rgb.r, rgb.g, rgb.b)
       const darken = pSBC(-0.4, color)
 
-      console.log(darken)
       new TWEEN.Tween(new THREE.Color(color))
         .to(new THREE.Color(darken), 200)
         .easing(TWEEN.Easing.Quadratic.Out)
@@ -695,8 +737,10 @@ export default function (element, canvas) {
   }
 
   function spawnPulse () {
+    const tempoMultiplier = 100.0 / data.track.tempo * (isChorus() ? 1 : 1.5)
+
     const material = new THREE.MeshBasicMaterial({
-      color: (currentBeat === 0 && isChorus(currentGroup)) ? themeColor : 0x000000,
+      color: (currentBeat === 0 && isChorus(currentGroup)) ? darkColor : primaryColor,
       transparent: true,
       opacity: 0,
     })
@@ -709,7 +753,7 @@ export default function (element, canvas) {
     circle.position.set(
       isChorus() ? 0 : (currentBeat === 0 ? getRandomDouble(-1800, 1800) : getRandomDouble(-1400, 1400)),
       isChorus() ? -80 : (currentBeat === 0 ? getRandomDouble(-1200, 1200) : getRandomDouble(-1000, 1000)),
-      isChorus() ? 1 : -400
+      isChorus() ? getRandomDouble(-400, 200) : getRandomDouble(-600, -300)
     )
     circle.rotation.set(
       circle.rotation.x,
@@ -718,20 +762,23 @@ export default function (element, canvas) {
     )
     scene.add(circle)
 
-    animateVector3(circle.position, new Vector3(0, 0, isChorus() ? 800 : 0), {
+    animateVector3(circle.position, new Vector3(
+      isChorus() ? 0 : (currentBeat === 0 ? getRandomDouble(-1800, 1800) : getRandomDouble(-1400, 1400)),
+      isChorus() ? -80 : (currentBeat === 0 ? getRandomDouble(-1200, 1200) : getRandomDouble(-1000, 1000)),
+      isChorus() ? getRandomDouble(600, 800) : getRandomDouble(-200, 100)), {
       easing: TWEEN.Easing.Linear.None,
-      duration: isChorus() ? 1000 : 2000
+      duration: isChorus() ? 1000 : 2000 * tempoMultiplier,
     })
 
-    tween(circle.material, (isChorus() && currentBeat === 0) ? 0.1 : 0.05, {
+    tween(circle.material, (isChorus() && currentBeat === 0) ? 0.4 : 0.2, {
       variable: 'opacity',
       easing: TWEEN.Easing.Linear.None,
-      duration: isChorus() ? 200 : 400,
+      duration: (isChorus() ? 200 : 400) * tempoMultiplier,
       callback: function () {
         tween(circle.material, 0, {
           variable: 'opacity',
           easing: TWEEN.Easing.Linear.None,
-          duration: isChorus() ? 800 : 1600,
+          duration: (isChorus() ? 800 : 1600) * tempoMultiplier,
           callback: function () {
             scene.remove(circle)
           }
@@ -886,12 +933,13 @@ export default function (element, canvas) {
     return Math.random() * (max - min) + min
   }
 
-  function hexToRgb (i) {
-    return {
-      r: (i >> 16) & 0xFF,        // or `(i & 0xFF0000) >> 16`
-      g: (i >> 8) & 0xFF,        // or `(i & 0x00FF00) >>  8`
-      b: i & 0xFF         // or ` i & 0x0000FF       `
-    }
+  function hexToRgb (hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null
   }
 
   function componentToHex (c) {

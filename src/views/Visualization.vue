@@ -43,7 +43,7 @@
           slot="activator"
           color="green" text-color="white" @click="login"
         >
-          Spotify SignIn
+          <img src="@/assets/spotify-logo.svg" height="20"/> <span class="white-text">Sign in with Spotify</span>
         </v-btn>
         <v-btn v-if="user || spotifyAuthState" @click="signout">Sign Out</v-btn>
         <v-chip
@@ -126,6 +126,18 @@ export default {
         })
     },
     loadVisualization () {
+
+      if (false) {
+        Promise.all([
+          axios.get("/test.json"),
+          axios.get("/test.lrc")
+        ]).then(([analysisResponse, lyricsResponse]) => {
+          this.visualizer.load(analysisResponse.data, lyricsResponse.data, 78000)
+        })
+
+        return
+      }
+
       if (this.blockEvents) {
         console.log('Visualization Loading Blocked')
         return
@@ -138,15 +150,6 @@ export default {
       if (!this.playing) {
         this.visualizer.load()
         return
-      }
-
-      if (false) {
-        Promise.all([
-          axios.get("/test.json"),
-          axios.get("/test.lrc")
-        ]).then(([analysisResponse, lyricsResponse]) => {
-          this.visualizer.load(analysisResponse.data, lyricsResponse.data, 64000)
-        })
       }
 
       const t0 = performance.now()
@@ -165,7 +168,7 @@ export default {
         if (lyricsResponse.data.lrc && lyricsResponse.data.lrc.lyric) {
           lyrics = lyricsResponse.data.lrc.lyric
         }
-        this.visualizer.load(analysisResponse.data, lyrics, this.playingProgress + (t1 - t0), this.playingTrack.album.images[0].url)
+        this.visualizer.load(analysisResponse.data, lyrics, this.playingProgress + (t1 - t0), this.playingTrack.album.images[0].url, this.playingTrack.name + ' - ' + this.playingTrack.artists[0])
       })
     }
   },
@@ -200,5 +203,10 @@ export default {
     height: 0;
     overflow: visible;
     margin-top: -69pt;
+  }
+
+  .white-text {
+    color: white;
+    padding-left: 8px;
   }
 </style>
