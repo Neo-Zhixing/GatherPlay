@@ -46,19 +46,20 @@
         >
           <img src="@/assets/spotify-logo.svg" height="20"/> <span class="white-text">Sign in with Spotify</span>
         </v-btn>
-        <v-btn v-if="user || spotifyAuthState || event" @click="signout" class="transparent-button">Sign Out</v-btn>
+        <v-btn v-if="user || spotifyAuthState || event" @click="signout" class="transparent-button ma-0 mr-2">Sign Out</v-btn>
 
-        <v-btn v-if="event && (user || spotifyAuthState)" :to="`/event/${ event }`" class="transparent-button">Playlist</v-btn>
+        <v-btn v-if="event && (user || spotifyAuthState)" :to="`/event/${ event }`" class="transparent-button ma-0 mr-2">Playlist</v-btn>
       </v-layout>
     </v-layout>
-    <div v-if="playingTrack" id="music-meta" v-show="labelVisible">
-      <img :src="playingTrack.album.images[0].url"/>
-      <div>
-        <h4 v-text="playingTrack.name"/>
-        <p v-text="playingTrack.album.name"/>
-        <p v-text="playingTrack.artists.map(a => a.name).join(', ')"/>
-      </div>
-    </div>
+    <transition name="fade">
+      <v-card v-if="playingTrack" id="music-meta" v-show="labelVisible">
+        <img :src="playingTrack.album.images[0].url"/>
+        <div style="padding: 6px !important; padding-top: 10px !important; margin: 0 !important; margin-left: 8px !important; margin-right: 14px !important;">
+          <p v-text="playingTrack.name" style="font-size: 26px !important; font-weight: 300 !important; margin: 0 !important;"/>
+          <p v-text="playingTrack.artists.map(a => a.name).join(', ')" style="font-size: 14px !important; font-weight: bold !important; margin: 0 !important;"/>
+        </div>
+      </v-card>
+    </transition>
   </v-container>
 </template>
 
@@ -179,7 +180,7 @@ export default {
       this.labelVisible = true
       setTimeout(() => {
         this.labelVisible = false
-      }, 3000)
+      }, 5000)
     }
   },
   computed: {
@@ -228,24 +229,32 @@ export default {
   .transparent-button:hover {
     opacity: 1;
   }
+
   #music-meta {
-    padding: 2rem;
-    background-color: rgba(255, 255, 255, 0.5);
+    background: #232529;
+    color: white;
+    padding: 0rem;
     display: flex;
     flex-direction: row;
     position: absolute;
-    width: 24rem;
-    height: 14rem;
-    left: 5rem;
-    bottom: 5rem;
+    height: 6rem;
+    left: 6px;
+    bottom: 4px;
     img {
       flex-shrink: 3;
       display: block;
-      height: 10rem;
-      width: 10rem;
+      height: 6rem;
+      width: 6rem;
     }
     div {
       margin-left: 1rem;
     }
+  }
+
+  .fade-enter-active, .fade-leave-active {
+    transition: opacity .5s;
+  }
+  .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+    opacity: 0;
   }
 </style>

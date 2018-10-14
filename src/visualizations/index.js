@@ -127,7 +127,7 @@ export default function (element, canvas) {
 
       titleGroup = new THREE.Group()
 
-      let message = 'Lyrically.'
+      let message = 'Lyricly.'
       let shapes = font.generateShapes(message, 50)
       let geometry = new THREE.ShapeGeometry(shapes)
       geometry.computeBoundingBox()
@@ -177,11 +177,10 @@ export default function (element, canvas) {
   }
 
   this.load = function (analysis, lyrics, time, _cover, _name) {
+
     isLoaded = false
     cover = _cover
     name = _name
-
-    console.log(lyrics)
 
     if (cover) {
       Vibrant.from(cover).getPalette()
@@ -193,7 +192,6 @@ export default function (element, canvas) {
     }
 
     if (lyrics != null) {
-
       const t = window.performance.now()
 
       if (!time) time = 0
@@ -270,7 +268,9 @@ export default function (element, canvas) {
         if (lyrics != null) {
           onLoaded()
         } else {
-          displayTitle()
+          if (font != null) {
+            displayTitle()
+          }
         }
       }
 
@@ -293,6 +293,7 @@ export default function (element, canvas) {
       } else {
         reset()
       }
+
     }
   }
 
@@ -408,7 +409,13 @@ export default function (element, canvas) {
       let loudness_sum = 0
       let startSegment = segments
       while (segments < data.segments.length && data.segments[segments].start < (i + 1 === lyricTextGroups.length ? Number.MAX_VALUE : lyricTextGroups[i + 1].firstChildren.lyric.timestamp)) {
-        loudness_sum += data.segments[segments].loudness_max
+        const loudness = data.segments[segments].loudness_max
+        loudness_sum += loudness
+        if (!data.track.loudness_max) data.track.loudness_max = -50
+        if (!data.track.loudness_min) data.track.loudness_min = 50
+
+        if (loudness > data.track.loudness_max) data.track.loudness_max = loudness
+        if (loudness < data.track.loudness_min) data.track.loudness_min = loudness
         segments++
       }
 
@@ -761,7 +768,8 @@ export default function (element, canvas) {
   }
 
   function spawnPulse () {
-    const tempoMultiplier = 100.0 / data.track.tempo * (isChorus() ? 1.5 : 3)
+    const tempoMultiplier = 100.0 / data.track.tempo * 3
+    const groupMultiplier = currentGroup != null ? ((currentGroup.avg_loudness - data.track.loudness_min) / (data.track.loudness_max - data.track.loudness_min)) : 1;
 
     const material = new THREE.MeshBasicMaterial({
       color: (currentBeat === 0 && isChorus(currentGroup)) ? darkColor : primaryColor,
@@ -769,7 +777,7 @@ export default function (element, canvas) {
       opacity: 0,
     })
 
-    const radius = (isChorus() || currentBeat === 0) ? 300 : 150
+    const radius = ((isChorus() || currentBeat === 0) ? 400 : 200) * groupMultiplier
     const segments = 64
 
     const circleGeometry = new THREE.CircleGeometry(radius, segments)
@@ -788,13 +796,13 @@ export default function (element, canvas) {
 
     animateVector3(circle.position, new Vector3(
       isChorus() ? 0 : circle.position.x + (currentBeat === 0 ? getRandomDouble(-450, 450) : getRandomDouble(-400, 400)),
-      isChorus() ? -80 : circle.position.y + (currentBeat === 0 ? getRandomDouble(-300, 300) : getRandomDouble(-250, 250)),
+      isChorus() ? 0 : circle.position.y + (currentBeat === 0 ? getRandomDouble(-300, 300) : getRandomDouble(-250, 250)),
       circle.position.z + isChorus() ? 1000 : getRandomDouble(300, 600), {
-      easing: TWEEN.Easing.Linear.None,
-      duration: isChorus() ? 1000 : 2000 * tempoMultiplier,
-    }))
+        easing: TWEEN.Easing.Linear.None,
+        duration: isChorus() ? 1000 : 2000 * tempoMultiplier,
+      }))
 
-    tween(circle.material, (isChorus() && currentBeat === 0) ? 0.4 : 0.2, {
+    tween(circle.material, 0.2, {
       variable: 'opacity',
       easing: TWEEN.Easing.Linear.None,
       duration: (isChorus() ? 200 : 400) * tempoMultiplier,
