@@ -7,7 +7,7 @@
    </v-layout>
    <v-layout v-else-if="doc" row wrap id="event-layout">
      <v-flex sm9 xs12>
-        <playlist :list="doc.playlist" :event="$route.params.event_id"/>
+        <playlist :list="doc.playlist" :event="$route.params.event_id" :playing="doc.playingTrack"/>
      </v-flex>
      <v-flex sm3 xs12>a</v-flex>
    </v-layout>
@@ -42,7 +42,6 @@ export default {
     const docRef = db.collection('events').doc(this.$route.params.event_id)
     docRef.get()
       .then(doc => {
-
         if (!doc.exists) {
           this.loading = false
           return
@@ -53,7 +52,7 @@ export default {
           return
         }
         this.doc = doc.data()
-        if (this.doc.host === this.user.uid) {
+        if (this.host) { // Only pull when the user is a host
           this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
           this.$store.dispatch('spotify/pullCurrentPlayback')
         } else {
@@ -69,30 +68,34 @@ export default {
   computed: {
     ...mapState({
       playingTrack: state => state.spotify.playingTrack,
+      playing: state => state.spotify.playing,
       user: state => state.user,
-    })
+    }),
+    host() {
+      return this.user && this.doc.host === this.user.uid
+    }
   },
   watch: {
-    playingTrack () {
-      if (!this.doc || this.doc.playlist.length === 0) {
+    playing () {
+      if (!this.doc || this.doc.playlist.length == 0) {
         return
       }
-      if (!this.playingTrack.is_playing) {
-        // Request new song
-        console.log('Requesting new song')
-        this.$store.getters['spotify/client']
-          .then(client => {
-            return client.put('/me/player/play', {
-              uris: [this.doc.playlist[0].uri]
-            })
-          })
-          .then(() => {
-            return db.collection('events').doc(this.$route.params.event_id).update({
-              playlist: firebase.firestore.FieldValue.arrayRemove(this.doc.playlist[0]),
-            })
-          })
+      if (this.playing) {
+        return
       }
-    }
+      console.log('Requesting new song')
+      this.$store.getters['spotify/client']
+        .then(client => {
+          return client.put('/me/player/play', {
+            uris: [this.doc.playlist[0].uri]
+          })
+        })
+        .then(() => {
+          return db.collection('events').doc(this.$route.params.event_id).update({
+            playlist: firebase.firestore.FieldValue.arrayRemove(this.doc.playlist[0]),
+          })
+        })
+    },
   }
 }
 </script>

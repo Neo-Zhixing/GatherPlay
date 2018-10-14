@@ -6,8 +6,8 @@
     <v-card-text>
       <v-list>
         <v-subheader>Currently playing:</v-subheader>
-        <v-list-tile>
-          <h3>{{ playingTrack.name }}</h3>
+        <v-list-tile v-if="playing">
+          <h3>{{ playing.name }}</h3>
         </v-list-tile>
         <v-subheader>
           Upcoming
@@ -68,6 +68,7 @@ export default {
   props: {
     event: String,
     list: Array,
+    playing: Object,
   },
   data () {
     return {
@@ -124,9 +125,6 @@ export default {
     user () {
       return this.$store.state.user
     },
-    ...mapState({
-      playingTrack: state => state.spotify.playingTrack,
-    })
   },
 }
 </script>

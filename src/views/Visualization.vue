@@ -48,7 +48,7 @@
           </v-chip>
           <v-chip
             v-if="playingTrack" color="blue" text-color="white">
-                  {{ playingTrack.item.name }}
+                  {{ playingTrack.name }}
           </v-chip>
       </v-layout>
 
@@ -73,7 +73,7 @@ export default {
   mounted () {
     this.visualizer = new Visualizer(this.$refs['visual'])
     this.visualizer.load()
-    if (true/*this.$store.state.eventID === null*/) {
+    if (this.event === null && this.$store.state.spotify.authData) {
       this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
       this.$store.dispatch('spotify/pullCurrentPlayback')
     } else {
@@ -110,20 +110,7 @@ export default {
   },
   watch: {
     playingTrack () {
-      if (this.playingTrackID === this.playingTrack.item.uri) {
-        // Still playing the previous song
-        return
-      }
-      this.playingTrackID = this.playingTrack.item.uri
-      this.$store.getters['spotify/client']
-        .then(client => {
-          return Promise.all([client.get(`/audio-analysis/${this.playingTrack.item.id}`)])
-        })
-        .then(([analysisResponse]) => {
-          this.visualizer.load()
-          console.log(analysisResponse.data)
-        })
-
+      console.log("observerd")
     }
   }
 }
