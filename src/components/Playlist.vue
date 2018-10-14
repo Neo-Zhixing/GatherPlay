@@ -14,6 +14,9 @@
             <v-list-tile-title>{{ playing.name }}</v-list-tile-title>
             <v-list-tile-sub-title>{{ playing.album.name }} by {{ playing.artists.map(a=>a.name).join(', ')}}</v-list-tile-sub-title>
           </v-list-tile-content>
+          <v-list-tile-action>
+            <v-btn flat color="orange" @click="skip">Skip</v-btn>
+          </v-list-tile-action>
         </v-list-tile>
         <v-subheader>
           Upcoming
@@ -74,8 +77,10 @@
 <script>
 import firebase, { db } from '@/plugins/firebase'
 import { mapState } from 'vuex'
+import VListTileAction from 'vuetify/src/components/VList/VListTileAction'
 export default {
   name: 'Playlist',
+  components: { VListTileAction },
   props: ['event', 'list', 'playing'],
   data () {
     return {
@@ -93,6 +98,19 @@ export default {
     }
   },
   methods: {
+    skip () {
+      this.$store.getters['spotify/client']
+        .then(client => {
+          return client.put('/me/player/play', {
+            uris: [this.list[0].uri]
+          })
+        })
+        .then(() => {
+          return db.collection('events').doc(this.$route.params.event_id).update({
+            playlist: firebase.firestore.FieldValue.arrayRemove(this.list[0]),
+          })
+        })
+    },
     login () {
       this.$store.dispatch('spotify/login')
     },

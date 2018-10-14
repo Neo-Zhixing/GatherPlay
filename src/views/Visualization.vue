@@ -110,11 +110,18 @@ export default {
       login: 'spotify/login',
     }),
     joinEventAnonymous () {
+
       db.collection('events').doc(this.joinEvent).get()
         .then(doc => {
           if (!doc.exists) {
             this.joinEvent = ''
             return
+          }
+          if (this.user && doc.data().host === this.user.uid && this.spotifyAuthState) {
+            // Is Host
+            db.collection('events').doc(this.joinEvent).update({
+              hostToken: this.spotifyAuthState.access_token
+            })
           }
           auth.signInAnonymously().then(() => {
             this.$router.push({ name: 'event', params: { event_id: this.joinEvent } })
