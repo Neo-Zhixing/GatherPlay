@@ -52,11 +52,6 @@ export default {
         window.removeEventListener('message', spotifyLoginCallback, false)
         auth.signInWithCustomToken(event.data.token)
         commit('createAuthData', event.data.spotify)
-        if (rootState.eventID) {
-          db.collection('events').doc(rootState.eventID).update({
-            hostToken: event.data.spotify.access_token
-          })
-        }
       }
       window.addEventListener('message', spotifyLoginCallback, false)
     },
