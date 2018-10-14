@@ -48,10 +48,17 @@
         </v-btn>
         <v-btn v-if="user || spotifyAuthState" @click="signout" class="transparent-button">Sign Out</v-btn>
 
-        <v-btn v-if="user || spotifyAuthState" :to="`/event/${ event }`" class="transparent-button">Playlist</v-btn>
+        <v-btn v-if="event && (user || spotifyAuthState)" :to="`/event/${ event }`" class="transparent-button">Playlist</v-btn>
       </v-layout>
-
     </v-layout>
+    <div v-if="playingTrack" id="music-meta" v-show="labelVisible">
+      <img :src="playingTrack.album.images[0].url"/>
+      <div>
+        <h4 v-text="playingTrack.name"/>
+        <p v-text="playingTrack.album.name"/>
+        <p v-text="playingTrack.artists.map(a => a.name).join(', ')"/>
+      </div>
+    </div>
   </v-container>
 </template>
 
@@ -69,6 +76,7 @@ export default {
       visualizer: null,
       hello: 0,
       blockEvents: false,
+      labelVisible: false,
     }
   },
   mounted () {
@@ -86,7 +94,7 @@ export default {
   },
   methods: {
     updateProvider () {
-      if (this.event || this.spotifyAuthState || this.user) {
+      if (this.event || this.spotifyAuthState) {
         this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
         this.$store.dispatch('spotify/pullCurrentPlayback')
       } else {
@@ -103,7 +111,6 @@ export default {
       login: 'spotify/login',
     }),
     joinEventAnonymous () {
-
       db.collection('events').doc(this.joinEvent).get()
         .then(doc => {
           if (!doc.exists) {
@@ -111,10 +118,12 @@ export default {
             return
           }
           if (this.user && doc.data().host === this.user.uid && this.spotifyAuthState) {
-            // Is Host
             db.collection('events').doc(this.joinEvent).update({
               hostToken: this.spotifyAuthState.access_token
             })
+            this.$store.commit('changeEvent', this.joinEvent)
+            this.updateProvider()
+            return
           }
           auth.signInAnonymously().then(() => {
             this.$store.commit('changeEvent', this.joinEvent)
@@ -167,6 +176,10 @@ export default {
         }
         this.visualizer.load(analysisResponse.data, lyrics, this.playingProgress + (t1 - t0), this.playingTrack.album.images[0].url, this.playingTrack.name + ' - ' + this.playingTrack.artists[0])
       })
+      this.labelVisible = true
+      setTimeout(() => {
+        this.labelVisible = false
+      }, 3000)
     }
   },
   computed: {
@@ -190,7 +203,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="styl">
   #visualization-container {
     width: 100%;
     height: 100%;
@@ -214,5 +227,25 @@ export default {
 
   .transparent-button:hover {
     opacity: 1;
+  }
+  #music-meta {
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    width: 24rem;
+    height: 14rem;
+    left: 5rem;
+    bottom: 5rem;
+    img {
+      flex-shrink: 3;
+      display: block;
+      height: 10rem;
+      width: 10rem;
+    }
+    div {
+      margin-left: 1rem;
+    }
   }
 </style>
