@@ -119,7 +119,11 @@ export default {
         ])
       }).then(([analysisResponse, lyricsResponse]) => {
         const t1 = performance.now()
-        this.visualizer.load(analysisResponse.data, lyricsResponse.data.lrc.lyric, this.playingProgress + (t1 - t0))
+        let lyrics = null
+        if (lyricsResponse.data.lrc && lyricsResponse.data.lrc.lyric) {
+          lyrics = lyricsResponse.data.lrc.lyric
+        }
+        this.visualizer.load(analysisResponse.data, lyrics, this.playingProgress + (t1 - t0))
       })
     }
   }
