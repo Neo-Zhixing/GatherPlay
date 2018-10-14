@@ -115,36 +115,12 @@ export default {
           })
         })
     },
-<<<<<<< HEAD
-  },
-  computed: {
-    ...mapState({
-      user: state => state.user,
-      event: state => state.eventID,
-      playingTrack: state => state.spotify.playingTrack,
-      playingProgress: state => state.spotify.progress,
-      spotifyAuthState: state => state.spotify.authData,
-    })
-  },
-  watch: {
-    playingTrack () {
-      if (false) {
-        Promise.all([
-          axios.get("/test.json"),
-          axios.get("/test.lrc")
-        ]).then(([analysisResponse, lyricsResponse]) => {
-          this.visualizer.load(analysisResponse.data, lyricsResponse.data, 64000)
-        })
-      }
-
-=======
     loadVisualization () {
       console.log('Loading Visualization..', this.playing)
       if (!this.playing) {
         this.visualizer.load()
         return
       }
->>>>>>> master
       const t0 = performance.now()
       this.$store.getters['spotify/client'].then(client => {
         return Promise.all([
