@@ -107,6 +107,7 @@ export default {
   },
   watch: {
     playingTrack () {
+      const t0 = performance.now()
       this.$store.getters['spotify/client'].then(client => {
         return Promise.all([
           client.get(`/audio-analysis/${this.playingTrack.id}`),
@@ -117,7 +118,8 @@ export default {
             })
         ])
       }).then(([analysisResponse, lyricsResponse]) => {
-        this.visualizer.load(analysisResponse.data, lyricsResponse.data.lrc.lyric, this.playingProgress)
+        const t1 = performance.now()
+        this.visualizer.load(analysisResponse.data, lyricsResponse.data.lrc.lyric, this.playingProgress + (t1 - t0))
       })
     }
   }
