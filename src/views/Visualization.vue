@@ -47,7 +47,7 @@
           <img src="@/assets/spotify-logo.svg" height="20"/> <span class="white-text">Sign in with Spotify</span>
         </v-btn>
         <v-btn v-if="user || spotifyAuthState" @click="signout" class="transparent-button">Sign Out</v-btn>
-        
+
         <v-btn v-if="user || spotifyAuthState" :to="`/event/${ event }`" class="transparent-button">Playlist</v-btn>
       </v-layout>
 

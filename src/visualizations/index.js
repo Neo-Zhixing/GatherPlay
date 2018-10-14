@@ -46,6 +46,7 @@ export default function (element, canvas) {
 
   let isTitleDisplayed = false
   let titleGroup
+  let errorGroup
   let isLoaded = false
   let lyricTexts = []
   let lyricTextGroups = []
@@ -127,7 +128,7 @@ export default function (element, canvas) {
 
       titleGroup = new THREE.Group()
 
-      let message = 'Lyrically.'
+      let message = 'Lyricly.'
       let shapes = font.generateShapes(message, 50)
       let geometry = new THREE.ShapeGeometry(shapes)
       geometry.computeBoundingBox()
@@ -177,11 +178,10 @@ export default function (element, canvas) {
   }
 
   this.load = function (analysis, lyrics, time, _cover, _name) {
+
     isLoaded = false
     cover = _cover
     name = _name
-
-    console.log(lyrics)
 
     if (cover) {
       Vibrant.from(cover).getPalette()
@@ -193,7 +193,6 @@ export default function (element, canvas) {
     }
 
     if (lyrics != null) {
-
       const t = window.performance.now()
 
       if (!time) time = 0
@@ -274,6 +273,70 @@ export default function (element, canvas) {
         }
       }
 
+      // Nothing's playing?
+      if (analysis === undefined) {
+        errorGroup = new THREE.Group()
+        console.log("Hey")
+
+        let message = "It's a bit quiet in here..."
+        let shapes = font.generateShapes(message, 50)
+        let geometry = new THREE.ShapeGeometry(shapes)
+        geometry.computeBoundingBox()
+        let text = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+          color: 0x000000,
+          transparent: true,
+          opacity: 1,
+          side: THREE.FrontSide
+        }))
+        text.position.z = 200
+        text.position.y = 30
+
+        let xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x)
+        geometry.translate(xMid, 0, 0)
+
+        errorGroup.add(text)
+
+        message = 'Now you are connected, try playing a song on Spotify.'
+        shapes = font.generateShapes(message, 10)
+        geometry = new THREE.ShapeGeometry(shapes)
+        geometry.computeBoundingBox()
+        text = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+          color: 0x000000,
+          transparent: true,
+          opacity: 1,
+          side: THREE.FrontSide
+        }))
+        text.position.z = 200
+        text.position.y = 0
+        xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x)
+        geometry.translate(xMid, 0, 0)
+
+        errorGroup.add(text)
+
+        errorGroup.position.y = -20
+        errorGroup.rotation.x = -Math.PI / 16
+
+        scene.add(errorGroup)
+      }
+
+      if (analysis !== undefined && errorGroup != null) {
+        errorGroup.children.forEach(child => {
+          animateVector3(child.position, new Vector3(child.position.x, child.position.y + 350, -1200), {
+            easing: TWEEN.Easing.Quadratic.Out,
+            duration: 500,
+          })
+          tween(child.material, 0, {
+            variable: 'opacity',
+            easing: TWEEN.Easing.Quadratic.Out,
+            duration: 500,
+            callback: function () {
+              reset()
+            }
+          })
+        })
+        errorGroup = null
+      }
+
       if (titleGroup != null) {
         titleGroup.children.forEach(child => {
           animateVector3(child.position, new Vector3(child.position.x, child.position.y + 350, -1200), {
@@ -293,6 +356,7 @@ export default function (element, canvas) {
       } else {
         reset()
       }
+
     }
   }
 
@@ -408,7 +472,13 @@ export default function (element, canvas) {
       let loudness_sum = 0
       let startSegment = segments
       while (segments < data.segments.length && data.segments[segments].start < (i + 1 === lyricTextGroups.length ? Number.MAX_VALUE : lyricTextGroups[i + 1].firstChildren.lyric.timestamp)) {
-        loudness_sum += data.segments[segments].loudness_max
+        const loudness = data.segments[segments].loudness_max
+        loudness_sum += loudness
+        if (!data.track.loudness_max) data.track.loudness_max = -50
+        if (!data.track.loudness_min) data.track.loudness_min = 50
+
+        if (loudness > data.track.loudness_max) data.track.loudness_max = loudness
+        if (loudness < data.track.loudness_min) data.track.loudness_min = loudness
         segments++
       }
 
@@ -762,6 +832,7 @@ export default function (element, canvas) {
 
   function spawnPulse () {
     const tempoMultiplier = 100.0 / data.track.tempo * (isChorus() ? 1.5 : 3)
+    const groupMultiplier = currentGroup != null ? ((currentGroup.avg_loudness - data.track.loudness_min) / (data.track.loudness_max - data.track.loudness_min)) : 1;
 
     const material = new THREE.MeshBasicMaterial({
       color: (currentBeat === 0 && isChorus(currentGroup)) ? darkColor : primaryColor,
@@ -769,7 +840,7 @@ export default function (element, canvas) {
       opacity: 0,
     })
 
-    const radius = (isChorus() || currentBeat === 0) ? 300 : 150
+    const radius = ((isChorus() || currentBeat === 0) ? 400 : 200) * groupMultiplier
     const segments = 64
 
     const circleGeometry = new THREE.CircleGeometry(radius, segments)
