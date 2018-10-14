@@ -9,24 +9,30 @@ import Kaleidoscope from './kaleidoscope'
 export let playtime = 0
 
 const pSBC = function (p, from, to) {
-  if(typeof(p)!="number"||p<-1||p>1||typeof(from)!="string"||(from[0]!='r'&&from[0]!='#')||(to&&typeof(to)!="string"))return null; //ErrorCheck
-  const pSBCr=(d)=>{
-    let l=d.length,RGB={};
-    if(l>9){
-      d=d.split(",");
-      if(d.length<3||d.length>4)return null;//ErrorCheck
-      RGB[0]=i(d[0].split("(")[1]),RGB[1]=i(d[1]),RGB[2]=i(d[2]),RGB[3]=d[3]?parseFloat(d[3]):-1;
-    }else{
-      if(l==8||l==6||l<4)return null; //ErrorCheck
-      if(l<6)d="#"+d[1]+d[1]+d[2]+d[2]+d[3]+d[3]+(l>4?d[4]+""+d[4]:""); //3 or 4 digit
-      d=i(d.slice(1),16),RGB[0]=d>>16&255,RGB[1]=d>>8&255,RGB[2]=d&255,RGB[3]=-1;
-      if(l==9||l==5)RGB[3]=r((RGB[2]/255)*10000)/10000,RGB[2]=RGB[1],RGB[1]=RGB[0],RGB[0]=d>>24&255;
+  if (typeof (p) != 'number' || p < -1 || p > 1 || typeof (from) != 'string' || (from[0] != 'r' && from[0] != '#') || (to && typeof (to) != 'string')) return null //ErrorCheck
+  const pSBCr = (d) => {
+    let l = d.length, RGB = {}
+    if (l > 9) {
+      d = d.split(',')
+      if (d.length < 3 || d.length > 4) return null//ErrorCheck
+      RGB[0] = i(d[0].split('(')[1]), RGB[1] = i(d[1]), RGB[2] = i(d[2]), RGB[3] = d[3] ? parseFloat(d[3]) : -1
+    } else {
+      if (l == 8 || l == 6 || l < 4) return null //ErrorCheck
+      if (l < 6) d = '#' + d[1] + d[1] + d[2] + d[2] + d[3] + d[3] + (l > 4 ? d[4] + '' + d[4] : '') //3 or 4 digit
+      d = i(d.slice(1), 16), RGB[0] = d >> 16 & 255, RGB[1] = d >> 8 & 255, RGB[2] = d & 255, RGB[3] = -1
+      if (l == 9 || l == 5) RGB[3] = r((RGB[2] / 255) * 10000) / 10000, RGB[2] = RGB[1], RGB[1] = RGB[0], RGB[0] = d >> 24 & 255
     }
-    return RGB;}
-  var i=parseInt,r=Math.round,h=from.length>9,h=typeof(to)=="string"?to.length>9?true:to=="c"?!h:false:h,b=p<0,p=b?p*-1:p,to=to&&to!="c"?to:b?"#000000":"#FFFFFF",f=pSBCr(from),t=pSBCr(to);
-  if(!f||!t)return null; //ErrorCheck
-  if(h)return "rgb"+(f[3]>-1||t[3]>-1?"a(":"(")+r((t[0]-f[0])*p+f[0])+","+r((t[1]-f[1])*p+f[1])+","+r((t[2]-f[2])*p+f[2])+(f[3]<0&&t[3]<0?")":","+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*10000)/10000:t[3]<0?f[3]:t[3])+")");
-  else return "#"+(0x100000000+r((t[0]-f[0])*p+f[0])*0x1000000+r((t[1]-f[1])*p+f[1])*0x10000+r((t[2]-f[2])*p+f[2])*0x100+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*255):t[3]>-1?r(t[3]*255):f[3]>-1?r(f[3]*255):255)).toString(16).slice(1,f[3]>-1||t[3]>-1?undefined:-2);
+    return RGB
+  }
+  var i = parseInt, r = Math.round, h = from.length > 9,
+    h = typeof (to) == 'string' ? to.length > 9 ? true : to == 'c' ? !h : false : h, b = p < 0, p = b ? p * -1 : p,
+    to = to && to != 'c' ? to : b ? '#000000' : '#FFFFFF', f = pSBCr(from), t = pSBCr(to)
+  if (!f || !t) return null //ErrorCheck
+  if (h) {
+    return 'rgb' + (f[3] > -1 || t[3] > -1 ? 'a(' : '(') + r((t[0] - f[0]) * p + f[0]) + ',' + r((t[1] - f[1]) * p + f[1]) + ',' + r((t[2] - f[2]) * p + f[2]) + (f[3] < 0 && t[3] < 0 ? ')' : ',' + (f[3] > -1 && t[3] > -1 ? r(((t[3] - f[3]) * p + f[3]) * 10000) / 10000 : t[3] < 0 ? f[3] : t[3]) + ')')
+  } else {
+    return '#' + (0x100000000 + r((t[0] - f[0]) * p + f[0]) * 0x1000000 + r((t[1] - f[1]) * p + f[1]) * 0x10000 + r((t[2] - f[2]) * p + f[2]) * 0x100 + (f[3] > -1 && t[3] > -1 ? r(((t[3] - f[3]) * p + f[3]) * 255) : t[3] > -1 ? r(t[3] * 255) : f[3] > -1 ? r(f[3] * 255) : 255)).toString(16).slice(1, f[3] > -1 || t[3] > -1 ? undefined : -2)
+  }
 }
 
 export default function (element, canvas) {
@@ -36,6 +42,7 @@ export default function (element, canvas) {
   let startPlaytime
   let startPerformanceTime
 
+  let isTitleDisplayed = false
   let isLoaded = false
   let lyricTexts = []
   let lyricTextGroups = []
@@ -57,6 +64,7 @@ export default function (element, canvas) {
 
   let themeColor = 0x871b42
 
+  let useCanvas = false
   let canvasTexture
   let ctx
 
@@ -82,29 +90,87 @@ export default function (element, canvas) {
     element.appendChild(renderer.domElement)
     window.addEventListener('resize', onWindowResize, false)
 
-    ctx = canvas.getContext('2d')
-    canvasTexture = new THREE.CanvasTexture(canvas)
+    if (useCanvas) {
+      ctx = canvas.getContext('2d')
+      canvasTexture = new THREE.CanvasTexture(canvas)
 
-    const material = new THREE.MeshBasicMaterial({ map: canvasTexture })
+      const material = new THREE.MeshBasicMaterial({ map: canvasTexture })
 
-    const geometry = new THREE.PlaneGeometry(600, 600)
-    const visualPlane = new THREE.Mesh(geometry, material)
-    visualPlane.position.set(0, 0, -2000)
+      const geometry = new THREE.PlaneGeometry(600, 600)
+      const visualPlane = new THREE.Mesh(geometry, material)
+      visualPlane.position.set(0, 0, -2000)
 
-    scene.add(visualPlane)
-
-    if (font == null) {
-      const loader = new THREE.FontLoader()
-      loader.load('/fonts/Neue.json', function (_font) {
-        font = _font
-        onLoaded()
-      }) // end load function
-    } else {
-      onLoaded()
+      scene.add(visualPlane)
     }
-  } // end init
+
+    const loader = new THREE.FontLoader()
+    loader.load('/fonts/Neue.json', function (_font) {
+      font = _font
+      displayTitle()
+    })
+
+    animate()
+  }
+
+  function displayTitle () {
+    if (!isTitleDisplayed) {
+      isTitleDisplayed = true
+
+      if (isLoaded) return
+
+      const group = new THREE.Group()
+
+      let message = 'Lyrically.'
+      let shapes = font.generateShapes(message, 50)
+      let geometry = new THREE.ShapeGeometry(shapes)
+      geometry.computeBoundingBox()
+      let text = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 1,
+        side: THREE.FrontSide
+      }))
+      text.position.z = 200
+      text.position.y = 30
+      text.material.depthTest = false
+
+      let xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x)
+      geometry.translate(xMid, 0, 0)
+
+      group.add(text)
+
+      message = 'Sign in to get started.'
+      shapes = font.generateShapes(message, 10)
+      geometry = new THREE.ShapeGeometry(shapes)
+      geometry.computeBoundingBox()
+      text = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 1,
+        side: THREE.FrontSide
+      }))
+      text.position.z = 200
+      text.position.y = 0
+      text.material.depthTest = false
+      xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x)
+      geometry.translate(xMid, 0, 0)
+
+      group.add(text)
+
+      group.position.y = -20
+      group.rotation.x = -Math.PI / 16
+
+      scene.add(group)
+    }
+  }
+
+  this.init = function () {
+    setupScene()
+  }
 
   this.load = function (analysis, lyrics, time) {
+    isLoaded = false
+
     if (lyrics != null) {
 
       const t = window.performance.now()
@@ -143,10 +209,9 @@ export default function (element, canvas) {
       lastBeat = -1
       completedTween = true
 
-      onLoaded()
-    } else {
-      setupScene()
-      animate()
+      if (lyrics != null) {
+        onLoaded()
+      }
     }
   }
 
@@ -158,7 +223,15 @@ export default function (element, canvas) {
     lrc.getLyrics().forEach(it => spawnLyric(it))
     groupLyrics()
 
-    isLoaded = true
+    if (font !== null) {
+      isLoaded = true
+    } else {
+      setInterval(function () {
+        if (font !== null) {
+          isLoaded = true
+        }
+      }, 100)
+    }
   }
 
   let useLrcSectionsConfidence = 0
@@ -562,7 +635,7 @@ export default function (element, canvas) {
     const material = new THREE.MeshBasicMaterial({
       color: (currentBeat === 0 && isChorus(currentGroup)) ? themeColor : 0x000000,
       transparent: true,
-      opacity: (isChorus() && currentBeat === 0) ? 0.1 : 0.05,
+      opacity: 0,
     })
 
     const radius = (isChorus() || currentBeat === 0) ? 300 : 150
@@ -586,12 +659,20 @@ export default function (element, canvas) {
       easing: TWEEN.Easing.Linear.None,
       duration: isChorus() ? 1000 : 2000
     })
-    tween(circle.material, 0, {
+
+    tween(circle.material, (isChorus() && currentBeat === 0) ? 0.1 : 0.05, {
       variable: 'opacity',
       easing: TWEEN.Easing.Linear.None,
-      duration: isChorus() ? 1000 : 2000,
+      duration: isChorus() ? 200 : 400,
       callback: function () {
-        scene.remove(circle)
+        tween(circle.material, 0, {
+          variable: 'opacity',
+          easing: TWEEN.Easing.Linear.None,
+          duration: isChorus() ? 800 : 1600,
+          callback: function () {
+            scene.remove(circle)
+          }
+        })
       }
     })
 
@@ -682,9 +763,11 @@ export default function (element, canvas) {
 
       }
 
-      ctx.fillStyle = 'white'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      canvasTexture.needsUpdate = true
+      if (useCanvas) {
+        ctx.fillStyle = 'white'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        canvasTexture.needsUpdate = true
+      }
     }
   }
 
@@ -747,9 +830,9 @@ export default function (element, canvas) {
   function hexToRgb (i) {
     return {
       r: (i >> 16) & 0xFF,        // or `(i & 0xFF0000) >> 16`
-      g: (i >>  8) & 0xFF,        // or `(i & 0x00FF00) >>  8`
-      b:  i        & 0xFF         // or ` i & 0x0000FF       `
-    };
+      g: (i >> 8) & 0xFF,        // or `(i & 0x00FF00) >>  8`
+      b: i & 0xFF         // or ` i & 0x0000FF       `
+    }
   }
 
   function componentToHex (c) {
@@ -758,7 +841,7 @@ export default function (element, canvas) {
   }
 
   function rgbToHex (r, g, b) {
-    return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
   }
 
 }
