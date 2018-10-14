@@ -1,0 +1,109 @@
+{
+  "timestamp": 1539478401004,
+  "context": {
+    "external_urls": {
+      "spotify": "https://open.spotify.com/album/3kndSWeE2IYOrZEToZrHEV"
+    },
+    "href": "https://api.spotify.com/v1/albums/3kndSWeE2IYOrZEToZrHEV",
+    "type": "album",
+    "uri": "spotify:user:opxnarcdoehhfqju1bqhfegop:collection:album:3kndSWeE2IYOrZEToZrHEV"
+  },
+  "progress_ms": 72615,
+  "item": {
+    "album": {
+      "album_type": "album",
+      "artists": [
+        {
+          "external_urls": {
+            "spotify": "https://open.spotify.com/artist/6VuMaDnrHyPL1p4EHjYLi7"
+          },
+          "href": "https://api.spotify.com/v1/artists/6VuMaDnrHyPL1p4EHjYLi7",
+          "id": "6VuMaDnrHyPL1p4EHjYLi7",
+          "name": "Charlie Puth",
+          "type": "artist",
+          "uri": "spotify:artist:6VuMaDnrHyPL1p4EHjYLi7"
+        }
+      ],
+      "external_urls": {
+        "spotify": "https://open.spotify.com/album/3kndSWeE2IYOrZEToZrHEV"
+      },
+      "href": "https://api.spotify.com/v1/albums/3kndSWeE2IYOrZEToZrHEV",
+      "id": "3kndSWeE2IYOrZEToZrHEV",
+      "images": [
+        {
+          "height": 640,
+          "url": "https://i.scdn.co/image/82751e46dd9bf85b38de6c3561c08f19b3f61e13",
+          "width": 640
+        },
+        {
+          "height": 300,
+          "url": "https://i.scdn.co/image/575905f6c3b93383a56313ce3425d3b85057fa84",
+          "width": 300
+        },
+        {
+          "height": 64,
+          "url": "https://i.scdn.co/image/f8504711cba2941971e2a60553b4b3f235535acc",
+          "width": 64
+        }
+      ],
+      "name": "Nine Track Mind",
+      "release_date": "2016-01-29",
+      "release_date_precision": "day",
+      "total_tracks": 12,
+      "type": "album",
+      "uri": "spotify:album:3kndSWeE2IYOrZEToZrHEV"
+    },
+    "artists": [
+      {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/artist/6VuMaDnrHyPL1p4EHjYLi7"
+        },
+        "href": "https://api.spotify.com/v1/artists/6VuMaDnrHyPL1p4EHjYLi7",
+        "id": "6VuMaDnrHyPL1p4EHjYLi7",
+        "name": "Charlie Puth",
+        "type": "artist",
+        "uri": "spotify:artist:6VuMaDnrHyPL1p4EHjYLi7"
+      },
+      {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/artist/0C8ZW7ezQVs4URX5aX7Kqx"
+        },
+        "href": "https://api.spotify.com/v1/artists/0C8ZW7ezQVs4URX5aX7Kqx",
+        "id": "0C8ZW7ezQVs4URX5aX7Kqx",
+        "name": "Selena Gomez",
+        "type": "artist",
+        "uri": "spotify:artist:0C8ZW7ezQVs4URX5aX7Kqx"
+      }
+    ],
+    "disc_number": 1,
+    "duration_ms": 217706,
+    "explicit": false,
+    "external_ids": {
+      "isrc": "USAT21502909"
+    },
+    "external_urls": {
+      "spotify": "https://open.spotify.com/track/06KyNuuMOX1ROXRhj787tj"
+    },
+    "href": "https://api.spotify.com/v1/tracks/06KyNuuMOX1ROXRhj787tj",
+    "id": "06KyNuuMOX1ROXRhj787tj",
+    "is_local": false,
+    "is_playable": true,
+    "linked_from": {
+      "external_urls": {
+        "spotify": "https://open.spotify.com/track/37FXw5QGFN7uwwsLy8uAc0"
+      },
+      "href": "https://api.spotify.com/v1/tracks/37FXw5QGFN7uwwsLy8uAc0",
+      "id": "37FXw5QGFN7uwwsLy8uAc0",
+      "type": "track",
+      "uri": "spotify:track:37FXw5QGFN7uwwsLy8uAc0"
+    },
+    "name": "We Don't Talk Anymore (feat. Selena Gomez)",
+    "popularity": 80,
+    "preview_url": "https://p.scdn.co/mp3-preview/9c497e095198c3f26f98c244de8219935a908b81?cid=774b29d4f13844c495f206cafdad9c86",
+    "track_number": 5,
+    "type": "track",
+    "uri": "spotify:track:06KyNuuMOX1ROXRhj787tj"
+  },
+  "currently_playing_type": "track",
+  "is_playing": true
+}
