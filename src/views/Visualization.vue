@@ -142,7 +142,7 @@ export default {
         if (lyricsResponse.data.lrc && lyricsResponse.data.lrc.lyric) {
           lyrics = lyricsResponse.data.lrc.lyric
         }
-        this.visualizer.load(analysisResponse.data, lyrics, this.playingProgress + (t1 - t0))
+        this.visualizer.load(analysisResponse.data, lyrics, this.playingProgress + (t1 - t0), this.playingTrack.album.images[0].url)
       })
     }
   }
