@@ -73,13 +73,14 @@ export default {
   },
   mounted () {
     this.visualizer = new Visualizer(this.$refs['visual'], this.$refs['visual-canvas'])
-    this.visualizer.init()
     this.updateProvider()
 
     console.log(this.user)
     if (this.user){
       console.log(this.user.isAnonymous)
     }
+
+    this.visualizer.init(this.user)
 
     console.log(this.event)
   },

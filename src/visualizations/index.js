@@ -37,17 +37,21 @@ const pSBC = function (p, from, to) {
 
 export default function (element, canvas) {
 
+  let user
+
   let camera, scene, renderer, font
 
   let startPlaytime
   let startPerformanceTime
 
   let isTitleDisplayed = false
+  let titleGroup
   let isLoaded = false
   let lyricTexts = []
   let lyricTextGroups = []
   let currentLyric = null
   let currentGroup = null
+  let currentBeat = 0
   let lookingAtLyric = null
 
   let data = []
@@ -61,6 +65,7 @@ export default function (element, canvas) {
   const CAMERA_INITIAL_Z = 800
   const CAMERA_VERSE_FOV = 60
   const CAMERA_CHORUS_FOV = 95
+  const IN_NEGATIVE_THRESHOLD = -1.5
 
   let themeColor = 0x871b42
 
@@ -118,7 +123,7 @@ export default function (element, canvas) {
 
       if (isLoaded) return
 
-      const group = new THREE.Group()
+      titleGroup = new THREE.Group()
 
       let message = 'Lyrically.'
       let shapes = font.generateShapes(message, 50)
@@ -137,9 +142,9 @@ export default function (element, canvas) {
       let xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x)
       geometry.translate(xMid, 0, 0)
 
-      group.add(text)
+      titleGroup.add(text)
 
-      message = 'Sign in to get started.'
+      message = user == null ? 'Sign in to get started.' : "Synchronizing..."
       shapes = font.generateShapes(message, 10)
       geometry = new THREE.ShapeGeometry(shapes)
       geometry.computeBoundingBox()
@@ -155,16 +160,17 @@ export default function (element, canvas) {
       xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x)
       geometry.translate(xMid, 0, 0)
 
-      group.add(text)
+      titleGroup.add(text)
 
-      group.position.y = -20
-      group.rotation.x = -Math.PI / 16
+      titleGroup.position.y = -20
+      titleGroup.rotation.x = -Math.PI / 16
 
-      scene.add(group)
+      scene.add(titleGroup)
     }
   }
 
-  this.init = function () {
+  this.init = function (_user) {
+    user = _user
     setupScene()
   }
 
@@ -180,37 +186,94 @@ export default function (element, canvas) {
       lrc = new Lyrics(lyrics)
       const delay = (window.performance.now() - t) / 1000
 
-      startPlaytime = time / 1000 + delay
+      startPlaytime = time / 1000 + delay - 0.5
       startPerformanceTime = window.performance.now()
 
     } else {
       if (scene == null) return
     }
 
+    if (scene != null) {
+      new TWEEN.Tween(camera.fov)
+        .to(CAMERA_VERSE_FOV, 800)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .start()
+
+      const circleGeometry = new THREE.CircleGeometry(300, 64)
+      const circle = new THREE.Mesh(circleGeometry, new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0
+      }))
+      circle.position.set(0, 0, -600)
+      circle.rotation.set(
+        circle.rotation.x,
+        circle.rotation.y,
+        circle.rotation.z
+      )
+      scene.add(circle)
+
+      animateVector3(circle.position, new Vector3(0, 0, CAMERA_INITIAL_Z), {
+        easing: TWEEN.Easing.Linear.None,
+        duration: 1000,
+      })
+      tween(circle.material, 1, {
+        variable: 'opacity',
+        easing: TWEEN.Easing.Linear.None,
+        duration: 1000,
+        callback: function () {
+          scene.background = new THREE.Color(0xffffff)
+          scene.remove(circle)
+        }
+      })
+    }
+
     if (scene != null || lyrics == null) {
       console.log('Resetting scene')
 
-      while (scene.children.length > 0) {
-        scene.remove(scene.children[0])
+      const reset = function() {
+        while (scene.children.length > 0) {
+          scene.remove(scene.children[0])
+        }
+        for (const text in lyricTextGroups) {
+          scene.remove(text)
+        }
+
+        lyricTexts = []
+        lyricTextGroups = []
+        currentLyric = null
+        currentGroup = null
+        lookingAtLyric = null
+        useLrcSections = false
+
+        useLrcSectionsConfidence = 0
+        currentBeat = 0
+        lastBeat = -1
+        completedTween = true
+
+        if (lyrics != null) {
+          onLoaded()
+        }
       }
-      for (const text in lyricTextGroups) {
-        scene.remove(text)
-      }
 
-      lyricTexts = []
-      lyricTextGroups = []
-      currentLyric = null
-      currentGroup = null
-      lookingAtLyric = null
-      useLrcSections = false
-
-      useLrcSectionsConfidence = 0
-      currentBeat = 0
-      lastBeat = -1
-      completedTween = true
-
-      if (lyrics != null) {
-        onLoaded()
+      if (titleGroup != null) {
+        titleGroup.children.forEach(child => {
+          animateVector3(child.position, new Vector3(child.position.x, child.position.y, 600), {
+            easing: TWEEN.Easing.Quadratic.Out,
+            duration: 500,
+          })
+          tween(child.material, 0, {
+            variable: 'opacity',
+            easing: TWEEN.Easing.Quadratic.Out,
+            duration: 500,
+            callback: function () {
+              reset()
+            }
+          })
+        })
+        titleGroup = null
+      } else {
+        reset()
       }
     }
   }
@@ -435,7 +498,7 @@ export default function (element, canvas) {
 
       // In/out
       if (!it.isSpawned && !it.isFadingIn) {
-        if (it.lyric.timestamp - playtime < it.inThreshold) {
+        if (it.lyric.timestamp - playtime < it.inThreshold && it.lyric.timestamp - playtime > IN_NEGATIVE_THRESHOLD) {
           it.isSpawned = true
           it.visible = true
 
@@ -506,7 +569,9 @@ export default function (element, canvas) {
 
   }
 
-  function onBeat () {
+  function onBeat (beat) {
+    currentBeat = beat.index % data.track.time_signature
+
     spawnPulse()
 
     if (isChorus(currentGroup) && currentBeat === 0) {
@@ -629,8 +694,6 @@ export default function (element, canvas) {
     }
   }
 
-  let currentBeat = 0
-
   function spawnPulse () {
     const material = new THREE.MeshBasicMaterial({
       color: (currentBeat === 0 && isChorus(currentGroup)) ? themeColor : 0x000000,
@@ -644,8 +707,8 @@ export default function (element, canvas) {
     const circleGeometry = new THREE.CircleGeometry(radius, segments)
     const circle = new THREE.Mesh(circleGeometry, material)
     circle.position.set(
-      isChorus() ? 0 : (currentBeat === 0 ? getRandomDouble(-1400, 1400) : getRandomDouble(-800, 800)),
-      isChorus() ? -80 : (currentBeat === 0 ? getRandomDouble(-1000, 1000) : getRandomDouble(-600, 600)),
+      isChorus() ? 0 : (currentBeat === 0 ? getRandomDouble(-1800, 1800) : getRandomDouble(-1400, 1400)),
+      isChorus() ? -80 : (currentBeat === 0 ? getRandomDouble(-1200, 1200) : getRandomDouble(-1000, 1000)),
       isChorus() ? 1 : -400
     )
     circle.rotation.set(
@@ -675,11 +738,6 @@ export default function (element, canvas) {
         })
       }
     })
-
-    currentBeat++
-    if (currentBeat === data.track.time_signature) {
-      currentBeat = 0
-    }
   }
 
   let lastBeat = -1
@@ -690,7 +748,8 @@ export default function (element, canvas) {
       data.beats[lastBeat].processed = true
 
       if (playtime - data.beats[lastBeat].start < 1) {
-        onBeat()
+        data.beats[lastBeat].index = lastBeat
+        onBeat(data.beats[lastBeat])
       }
     }
   }
