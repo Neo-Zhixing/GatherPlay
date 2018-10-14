@@ -84,23 +84,21 @@ export default function (element, canvas) {
   } // end init
 
   this.load = function (analysis, lyrics, time) {
-    console.log("----HEY----")
-    console.log(analysis)
-    console.log(lyrics)
-    console.log(time)
-    console.log("----HEY----")
+    if (lyrics != null) {
 
-    const t = window.performance.now()
+      const t = window.performance.now()
 
-    if (!time) time = 0
-    data = analysis
-    lrc = new Lyrics(lyrics)
-    const delay = (window.performance.now() - t) / 1000
+      if (!time) time = 0
+      data = analysis
+      lrc = new Lyrics(lyrics)
+      const delay = (window.performance.now() - t) / 1000
 
-    startPlaytime = time / 1000 + delay - 1
-    startPerformanceTime = window.performance.now()
+      startPlaytime = time / 1000 + delay
+      startPerformanceTime = window.performance.now()
 
-    if (scene != null) {
+    }
+
+    if (scene != null || lyrics == null) {
       console.log("Resetting scene")
 
       while (scene.children.length > 0) {
