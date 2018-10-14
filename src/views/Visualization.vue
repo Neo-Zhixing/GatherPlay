@@ -48,13 +48,16 @@
           <img src="@/assets/spotify-logo.svg" height="20"/> <span class="white-text">Sign in with Spotify</span>
         </v-btn>
         <v-btn v-if="user || spotifyAuthState" @click="signout">Sign Out</v-btn>
-        <v-chip
-          v-if="playingTrack" color="blue" text-color="white">
-          {{ playingTrack.name }}
-        </v-chip>
       </v-layout>
-
     </v-layout>
+    <div v-if="playingTrack" id="music-meta" v-show="labelVisible">
+      <img :src="playingTrack.album.images[0].url"/>
+      <div>
+        <h4 v-text="playingTrack.name"/>
+        <p v-text="playingTrack.album.name"/>
+        <p v-text="playingTrack.artists.map(a => a.name).join(', ')"/>
+      </div>
+    </div>
   </v-container>
 </template>
 
@@ -72,6 +75,7 @@ export default {
       visualizer: null,
       hello: 0,
       blockEvents: false,
+      labelVisible: false,
     }
   },
   mounted () {
@@ -170,6 +174,10 @@ export default {
         }
         this.visualizer.load(analysisResponse.data, lyrics, this.playingProgress + (t1 - t0), this.playingTrack.album.images[0].url, this.playingTrack.name + ' - ' + this.playingTrack.artists[0])
       })
+      this.labelVisible = true
+      setTimeout(() => {
+        this.labelVisible = false
+      }, 3000)
     }
   },
   computed: {
@@ -193,7 +201,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="styl">
   #visualization-container {
     width: 100%;
     height: 100%;
@@ -208,5 +216,25 @@ export default {
   .white-text {
     color: white;
     padding-left: 8px;
+  }
+  #music-meta {
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    width: 24rem;
+    height: 14rem;
+    left: 5rem;
+    bottom: 5rem;
+    img {
+      flex-shrink: 3;
+      display: block;
+      height: 10rem;
+      width: 10rem;
+    }
+    div {
+      margin-left: 1rem;
+    }
   }
 </style>
