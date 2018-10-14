@@ -12,9 +12,10 @@ export default function (element, canvas) {
 
   let camera, scene, renderer, font
 
-  let sound
+  let startPerformanceTime
+  let startPlaytime
 
-  let visualizationDataLoaded = false
+  let isLoaded = false
   let lyricTexts = []
   let lyricTextGroups = []
   let currentLyric = null
@@ -22,6 +23,8 @@ export default function (element, canvas) {
   let lookingAtLyric = null
 
   let data = []
+
+  let lrc
 
   let useLrcSections = false
   const DEFAULT_EASING_TYPE = TWEEN.Easing.Quadratic.InOut
@@ -36,9 +39,6 @@ export default function (element, canvas) {
   let canvasTexture
   let ctx
 
-  init()
-  animate()
-
   function getDefaultMaterial () {
     return new THREE.MeshBasicMaterial({
       color: 0x000000,
@@ -48,17 +48,11 @@ export default function (element, canvas) {
     })
   }
 
-  function init () {
+  function setupScene () {
     camera = new THREE.PerspectiveCamera(CAMERA_VERSE_FOV, element.clientWidth / element.clientHeight, 0.01, 2000)
     camera.position.set(0, 0, CAMERA_INITIAL_Z)
     scene = new THREE.Scene()
     scene.background = new THREE.Color(0xffffff)
-
-    const loader = new THREE.FontLoader()
-    loader.load('/fonts/Neue.json', function (_font) {
-      font = _font
-      onLoaded()
-    }) // end load function
 
     renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setPixelRatio(1.5)
@@ -77,53 +71,80 @@ export default function (element, canvas) {
     visualPlane.position.set(0, 0, -2000)
 
     scene.add(visualPlane)
+
+    if (font == null) {
+      const loader = new THREE.FontLoader()
+      loader.load('/fonts/Neue.json', function (_font) {
+        font = _font
+        onLoaded()
+      }) // end load function
+    } else {
+      onLoaded()
+    }
   } // end init
 
   this.load = function (analysis, lyrics, time) {
-    console.log('got it!')
+    if (scene != null) {
+      isLoaded = false
+
+      renderer.dispose()
+      scene.traverse(object => {
+        if (!object.isMesh) return
+        object.geometry.dispose()
+        if (object.material.isMaterial) {
+          cleanMaterial(object.material)
+        } else {
+          for (const material of object.material) cleanMaterial(material)
+        }
+      })
+
+      const cleanMaterial = material => {
+        material.dispose()
+        for (const key of Object.keys(material)) {
+          const value = material[key]
+          if (value && typeof value === 'object' && 'minFilter' in value) {
+            value.dispose()
+          }
+        }
+      }
+      scene.dispose()
+      scene = null
+      camera = null
+      renderer = null
+
+      lyricTexts = []
+      lyricTextGroups = []
+      currentLyric = null
+      currentGroup = null
+      lookingAtLyric = null
+      useLrcSections = false
+    }
+
+    const t = window.performance.now()
+
+    setupScene()
+    animate()
+
+    if (!time) time = 0
+    data = analysis
+
+    lrc = new Lyrics(lyrics)
+
+    const delay = (window.performance.now() - t) / 1000
+
+    startPerformanceTime = window.performance.now()
+    startPlaytime = time + delay
   }
+
   function onLoaded () {
-    let lrcLoaded = false
-    let dataLoaded = false
-
-    axios.get('/test.lrc')
-      .then(response => {
-        const lrc = new Lyrics(response.data)
-        console.log(lrc.getLyrics())
-        lrc.getLyrics().forEach(it => spawnLyric(it))
-
-        lrcLoaded = true
-        if (dataLoaded) {
-          onVisualizationDataLoaded()
-        }
-      })
-
-    axios.get('/test.json')
-      .then(response => {
-        data = response.data
-
-        dataLoaded = true
-        if (lrcLoaded) {
-          onVisualizationDataLoaded()
-        }
-      })
-
-    sound = new Howl({
-      src: ['test.mp3']
-    })
-
-    sound.seek(63)
-    sound.play()
-    Howler.volume(0.5)
-
     window.KALEIDOSYNC = new Kaleidoscope(false)
     window.KALEIDOSYNC.duration = 100
     window.KALEIDOSYNC.buildSingleState(true)
-  }
 
-  function onVisualizationDataLoaded () {
+    lrc.getLyrics().forEach(it => spawnLyric(it))
     groupLyrics()
-    visualizationDataLoaded = true
+
+    isLoaded = true
   }
 
   let useLrcSectionsConfidence = 0
@@ -542,8 +563,8 @@ export default function (element, canvas) {
   function animate (time) {
     requestAnimationFrame(animate)
     TWEEN.update(time)
-    if (visualizationDataLoaded) {
-      playtime = parseFloat(sound.seek()) || 0
+    if (isLoaded) {
+      playtime = startPlaytime + (window.performance.now() - playtime) / 1000.0;
       checkBeat()
     }
     render()
@@ -553,7 +574,7 @@ export default function (element, canvas) {
 
   function render () {
     renderer.render(scene, camera)
-    if (visualizationDataLoaded) {
+    if (isLoaded) {
       renderLyricTexts()
 
       if (currentLyric != null && lookingAtLyric !== currentLyric) {

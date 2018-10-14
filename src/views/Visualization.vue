@@ -72,7 +72,7 @@ export default {
     }
   },
   mounted () {
-    //this.visualizer = new Visualizer(this.$refs['visual'])
+    this.visualizer = new Visualizer(this.$refs['visual'], this.$refs['visual-canvas'])
     this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
     this.$store.dispatch('spotify/pullCurrentPlayback')
   },
@@ -116,8 +116,7 @@ export default {
             })
         ])
       }).then(([analysisResponse, lyricsResponse]) => {
-        console.log(lyricsResponse.data.lrc.lyric)
-        //this.visualizer.load(analysisResponse.data, lyricsResponse.data.lrc.lyric)
+        this.visualizer.load(analysisResponse.data, lyricsResponse.data.lrc.lyric)
       })
     }
   }
