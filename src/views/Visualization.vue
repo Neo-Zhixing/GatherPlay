@@ -73,6 +73,7 @@ export default {
   },
   mounted () {
     this.visualizer = new Visualizer(this.$refs['visual'], this.$refs['visual-canvas'])
+    this.visualizer.init()
     this.updateProvider()
 
     console.log(this.user)
@@ -121,6 +122,16 @@ export default {
         this.visualizer.load()
         return
       }
+
+      if (false) {
+        Promise.all([
+          axios.get("/test.json"),
+          axios.get("/test.lrc")
+        ]).then(([analysisResponse, lyricsResponse]) => {
+          this.visualizer.load(analysisResponse.data, lyricsResponse.data, 64000)
+        })
+      }
+
       const t0 = performance.now()
       this.$store.getters['spotify/client'].then(client => {
         return Promise.all([
