@@ -5,8 +5,7 @@
       <v-layout row id="visualization-container" ref="visual">
       </v-layout>
       <v-layout wrap row align-center justify-end id="visualization-button">
-        <v-btn color="primary" v-if="event" @click="exitEvent">Exit {{event}}</v-btn>
-        <v-menu v-else pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
+        <v-menu v-if="!event" pd-5 offset-y top :close-on-content-click="false" :nudge-width="200">
           <v-btn
             slot="activator"
             color="primary" text-color="white"
@@ -39,7 +38,7 @@
           </v-btn>
         </v-menu>
         <v-btn
-          v-else
+          v-else-if="!user && !event"
           slot="activator"
           color="green" text-color="white" @click="login"
         >
@@ -97,9 +96,6 @@ export default {
     signout () {
       auth.signOut()
       this.$store.commit('spotify/createAuthData', null)
-      this.updateProvider()
-    },
-    exitEvent() {
       this.$store.commit('changeEvent', null)
       this.updateProvider()
     },
@@ -121,7 +117,8 @@ export default {
             })
           }
           auth.signInAnonymously().then(() => {
-            this.$router.push({ name: 'event', params: { event_id: this.joinEvent } })
+            this.$store.commit('changeEvent', this.joinEvent)
+            this.updateProvider()
           })
         })
     },
