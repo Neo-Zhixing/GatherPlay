@@ -70,7 +70,7 @@ export default {
       playing: state => state.spotify.playing,
       user: state => state.user,
     }),
-    host() {
+    host () {
       const hostornot = this.user && this.doc.host === this.user.uid
       console.log('AM I THE HOST?', this.user.uid)
       return hostornot

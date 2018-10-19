@@ -85,7 +85,7 @@ export default {
     this.updateProvider()
 
     console.log(this.user)
-    if (this.user){
+    if (this.user) {
       console.log(this.user.isAnonymous)
     }
 
@@ -133,11 +133,10 @@ export default {
         })
     },
     loadVisualization () {
-
       if (false) {
         Promise.all([
-          axios.get("/test.json"),
-          axios.get("/test.lrc")
+          axios.get('/test.json'),
+          axios.get('/test.lrc')
         ]).then(([analysisResponse, lyricsResponse]) => {
           this.visualizer.load(analysisResponse.data, lyricsResponse.data, 78000)
         })

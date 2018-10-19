@@ -1,29 +1,29 @@
 import Visualizer from './visualizer'
 
 class Template extends Visualizer {
-  constructor() {
+  constructor () {
     super()
 
     this.setEventHooks()
     this.initializeVisualizer()
   }
 
-  setEventHooks() {
+  setEventHooks () {
     // Called before and after visualizer starts for the first tiem.
-    this.events.beforeInit  = () => console.log('beforeInit()')
-    this.events.afterInit   = () => console.log('afterInit()')   
+    this.events.beforeInit = () => console.log('beforeInit()')
+    this.events.afterInit = () => console.log('afterInit()')
 
     // Called before and after visualizer starts.
-    this.events.beforeStart = () => console.log('beforeStart()') 
-    this.events.afterStart  = () => console.log('afterStart()')
+    this.events.beforeStart = () => console.log('beforeStart()')
+    this.events.afterStart = () => console.log('afterStart()')
 
     // Called before and after the visualizer stops.
-    this.events.beforeStop  = () => console.log('beforeStop()')
-    this.events.afterStop   = () => console.log('afterStop()')
+    this.events.beforeStop = () => console.log('beforeStop()')
+    this.events.afterStop = () => console.log('afterStop()')
   }
-  
+
   // Automatically called during the `beforeStart` event.
-  setIntervalHooks() {
+  setIntervalHooks () {
     this.intervals.hooks.tatums = (i) => {
       console.log('Tatum: ' + i)
     }
@@ -32,7 +32,7 @@ class Template extends Visualizer {
       console.log('Segment: ' + i)
     }
 
-    this.intervals.hooks.beats = (i) => {      
+    this.intervals.hooks.beats = (i) => {
       console.log('Beat: ' + i)
     }
 
@@ -43,7 +43,7 @@ class Template extends Visualizer {
     this.intervals.hooks.sections = (i) => {
       console.log('Section: ' + i)
     }
-  } 
+  }
 }
 
 export default Template

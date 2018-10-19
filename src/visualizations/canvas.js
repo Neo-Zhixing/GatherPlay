@@ -1,5 +1,5 @@
 class Canvas {
-  constructor(canvas) {
+  constructor (canvas) {
     this.isMobile = window.matchMedia('(max-width: 480px)').matches
     this.width = this.isMobile ? window.innerWidth * 2 : window.innerWidth
     this.height = this.isMobile ? window.innerHeight * 2 : window.innerHeight
@@ -19,36 +19,36 @@ class Canvas {
     }
   }
 
-  addStar(el) {
+  addStar (el) {
     this.stars.push(el)
   }
 
-  addBackground(el) {
+  addBackground (el) {
     this.background = el
   }
 
-  paint() {
+  paint () {
     this.ctx.clearRect(0, 0, this.width, this.height)
-    this.background.draw(this.ctx);
+    this.background.draw(this.ctx)
     this.stars.forEach((el) => el.draw(this.ctx))
     this.raf = requestAnimationFrame(this.paint.bind(this))
   }
 
-  startPaint() {
+  startPaint () {
     if (!this.isPainting) {
       this.paint()
       this.isPainting = true
     }
   }
 
-  stopPaint() {
+  stopPaint () {
     if (this.isPainting) {
       cancelAnimationFrame(this.raf)
       this.isPainting = false
     }
   }
 
-  init() {
+  init () {
     if (this.initialized === false) {
       this.startPaint()
       this.isPainting = true

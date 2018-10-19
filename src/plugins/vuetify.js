@@ -46,13 +46,13 @@ Vue.use(Vuetify, {
     transitions
   },
   theme: {
-    primary: "#000000",
-    secondary: "#FAFAFA",
-    accent: "#000000",
-    error: "#000000",
-    warning: "#000000",
-    info: "#000000",
-    success: "#000000"
+    primary: '#000000',
+    secondary: '#FAFAFA',
+    accent: '#000000',
+    error: '#000000',
+    warning: '#000000',
+    info: '#000000',
+    success: '#000000'
   },
   customProperties: true,
   iconfont: 'md',

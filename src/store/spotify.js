@@ -87,7 +87,6 @@ export default {
         client.defaults.headers['Authorization'] = state.authData['token_type'] + ' ' + state.authData['access_token']
         return Promise.resolve(client)
       } else if (rootState.eventID) {
-
         return db.collection('events').doc(rootState.eventID).get()
           .then(doc => {
             if (doc.exists) {
