@@ -25,8 +25,7 @@ function setSpotifyAuthData(data) {
   console.log(spotifyServer.defaults.headers['Authorization'])
 }
 
-
-module.exports = function (request, response) {
+function login(request, response) {
   // query.code Required. Came from the first step of OAuth.
   if (!request.query.code) {
     response.status(400).send({
@@ -96,15 +95,17 @@ module.exports = function (request, response) {
         return admin.auth().createCustomToken(user.uid)
       })
       .then(customToken => {
-        response.send(
-          `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body><script>\
-console.log(window.opener);\
-window.opener.postMessage({token:'${customToken}', spotify:${JSON.stringify(spotifyAuthData)}}, '${config.base_host}');\
-window.close();\
-</script></body></html>`)
-        return null
+        response.render('spotify-auth-login', {
+          spotify: spotifyAuthData,
+          token: customToken,
+          host: config.base_host,
+        })
       })
       .catch(() => {
         console.log("Unknown Error")
       })
+}
+
+module.exports = router => {
+  router.get('/spotify/auth', login)
 }

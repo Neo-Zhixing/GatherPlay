@@ -7,6 +7,7 @@ const admin = require('firebase-admin')
 const express = require('express')
 
 const app = express()
+app.set('views', './views')
 app.set('view engine', 'pug')
 
 const keys = require(__base + 'keys.json')
@@ -15,7 +16,7 @@ admin.initializeApp({
   databaseURL: keys.firebase.databaseURL,
 })
 
-app.get('/spotify/auth', require(__src + 'spotify/auth'))
+require(__src + 'spotify/auth')(app)
 
 // Expose Express API as a single Cloud Function:
 exports.api = functions.https.onRequest(app)
