@@ -1,4 +1,5 @@
 import keys from '@/keys.json'
+import configs from '@/../config.json'
 import { auth, db } from '@/plugins/firebase'
 import axios from 'axios'
 
@@ -41,12 +42,12 @@ export default {
         'response_type=code&' +
         `client_id=${keys.spotify.client_id}&` +
         `scope=${encodeURIComponent(scopes)}&` +
-        `redirect_uri=${encodeURIComponent(keys.spotify.callback_url)}`
+        `redirect_uri=${encodeURIComponent(configs.api_url + '/spotify/auth')}`
       const newWindow = window.open(theURL, 'spotify-login', 'height=500,width=700')
       if (window.focus) newWindow.focus()
 
       function spotifyLoginCallback (event) {
-        if (event.origin !== keys.spotify.callback_origin) {
+        if (event.origin !== configs.api_host) {
           return
         }
         window.removeEventListener('message', spotifyLoginCallback, false)

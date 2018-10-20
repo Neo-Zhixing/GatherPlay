@@ -1,6 +1,7 @@
 const admin = require('firebase-admin')
 
-const keys = require('../keys.json')
+const keys = require(__base + 'keys.json')
+const config = require(__proj + 'config.json')
 const spotifyKeys = keys.spotify
 const axios = require('axios')
 const qs = require('qs')
@@ -25,13 +26,11 @@ function setSpotifyAuthData(data) {
 }
 
 
-exports.handler = function (request, response) {
+module.exports = function (request, response) {
   // query.code Required. Came from the first step of OAuth.
   if (!request.query.code) {
     response.status(400).send({
-      message: "No Auth Code",
-      myRLS: request.baseUrl,
-      daf: request.originalUrl
+      message: "No Auth Code"
     })
     return
   }
@@ -41,7 +40,7 @@ exports.handler = function (request, response) {
     spotifyAuthServer.post('/token', qs.stringify({
       grant_type: 'authorization_code',
       code: request.query.code,
-      redirect_uri: 'http://localhost:5001/gather-play/us-central1/api/spotify/auth',
+      redirect_uri: config.api_url + '/spotify/auth',
       client_id: spotifyKeys.client_id,
       client_secret: spotifyKeys.client_secret,
     }), {
@@ -100,7 +99,7 @@ exports.handler = function (request, response) {
         response.send(
           `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body><script>\
 console.log(window.opener);\
-window.opener.postMessage({token:'${customToken}', spotify:${JSON.stringify(spotifyAuthData)}}, '${keys.host}');\
+window.opener.postMessage({token:'${customToken}', spotify:${JSON.stringify(spotifyAuthData)}}, '${config.base_host}');\
 window.close();\
 </script></body></html>`)
         return null

@@ -1,8 +1,6 @@
 {
   "spotify": {
     "client_id": "724eedf1a4c3476a95e841301556c78a",
-    "callback_url": "https://us-central1-neotoxin-184809.cloudfunctions.net/spotify-auth-localhost",
-    "callback_origin": "https://us-central1-neotoxin-184809.cloudfunctions.net",
     "scopes": [
       "user-read-private",
       "user-read-email",

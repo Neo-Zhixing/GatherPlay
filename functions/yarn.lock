@@ -1494,7 +1494,7 @@ firebase-admin@~6.0.0:
     "@google-cloud/storage" "^1.6.0"
     "@types/google-cloud__storage" "^1.1.7"
 
-firebase-functions@^2.0.3:
+firebase-functions@^2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/firebase-functions/-/firebase-functions-2.0.5.tgz#61b085e6bdd5f0feda4f1942549fe78530b3933e"
   integrity sha512-XedOTdaej68I/AmJyeDIKL2Cw6MwI7Ugov5QoEsOU9bh25iAseZmFKFQeqimW5Wb9wKLAli2Wq8ld+FtdOwdvQ==
