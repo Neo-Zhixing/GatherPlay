@@ -1,4 +1,5 @@
 const admin = require('firebase-admin')
+const functions = require('firebase-functions')
 const db = admin.firestore()
 const config = require(__proj + 'config.json')
 const keys = require(__base + 'keys.json').spotify
@@ -109,9 +110,9 @@ function login(req, res) {
 
 }
 
-function getClientCredential (req, res) {
+function getClientCredential () {
   const docRef = db.collection('state').doc('spotify')
-  docRef.get()
+  return docRef.get()
     .then(doc => {
       // Expires in 10 mins
       if (!doc.exists || !doc.data().expires || (doc.data().expires - Date.now()/1000) < 600 ) {
@@ -128,13 +129,7 @@ function getClientCredential (req, res) {
             return response.data
           })
           .catch(error => {
-            if (error.response && error.response.data) {
-              console.log(error.request)
-              res.status(error.response.status).send(error.response.data)
-            } else {
-              res.status(500).send("Server Unknown Error")
-              console.log(error)
-            }
+            throw new functions.https.HttpsError('unavailable', 'Spotify Server Connection Failed', error)
           })
       } else {
         return doc.data()
@@ -143,53 +138,60 @@ function getClientCredential (req, res) {
     .then(data => {
       data.expires_in = data.expires - Date.now()/1000 | 0
       delete data.expires
-      res.send(data)
+      return data
     })
 }
 
-function refreshToken(req, res) {
-  const userProfileRef = db.collection('users').doc(req.user.uid)
-  userProfileRef.get()
+function refreshToken(uid) {
+  const userProfileRef = db.collection('users').doc(uid)
+  return userProfileRef.get()
     .then(doc => {
-      if (!doc.exists) {
-        throw {
-          code: 404,
-          message: 'User Profile Not Exist',
-        }
-      }
+      if (!doc.exists)
+        throw new functions.https.HttpsError('not-found', 'User Profile Not Exist')
 
       const data = doc.data()
-      if (!data.keys || !data.keys.spotify || !data.keys.spotify.refresh_token) {
-        throw {
-          code: 404,
-          message: 'Refresh Token Not Exist',
-        }
-      }
+      if (!data.keys || !data.keys.spotify || !data.keys.spotify.refresh_token)
+        throw new functions.https.HttpsError('not-found', 'Refresh Token Not Exist')
       return spotifyAuthServer.post('/token', qs.stringify({
         grant_type: 'refresh_token',
         refresh_token: data.keys.spotify.refresh_token,
       }))
         .then(response => {
-          const data = response.data
-          res.send(data)
-          return userProfileRef.update({
-            'keys.spotify.access_token': data.access_token,
-            'keys.spotify.expires': data.expires_in + Date.now()/1000 | 0,
-            'keys.spotify.token_type': data.token_type,
-            'keys.spotify.scope': data.scope,
+          userProfileRef.update({
+            'keys.spotify.access_token': response.data.access_token,
+            'keys.spotify.expires': response.data.expires_in + Date.now()/1000 | 0,
+            'keys.spotify.token_type': response.data.token_type,
+            'keys.spotify.scope': response.data.scope,
           })
+          return response.data
+        })
+        .catch(error => {
+          throw new functions.https.HttpsError('unavailable', 'Spotify Server Connection Failed', error)
         })
     })
-    .catch(error => {
-      res.status(error.code).send(error.message)
-    })
-
-
 }
 
 const authorization = require(__src + 'middlewares/authorization')
-module.exports = router => {
+module.exports = (router, funcs) => {
   router.get('/spotify/auth', login)
-  router.get('/spotify/credential', getClientCredential)
-  router.get('/spotify/refresh', authorization, refreshToken)
+  router.get('/spotify/credential', authorization, (req, res) => {
+    getClientCredential(req.user.uid)
+      .then(result => {
+        res.send(result)
+      })
+      .catch(error => {
+        console.log(error)
+      })
+  })
+  router.get('/spotify/refresh', authorization, (req, res) => {
+    refreshToken(req.user.uid)
+      .then(result => {
+        res.send(result)
+      })
+      .catch(error => {
+        console.log(error)
+      })
+  })
+  funcs.spotify_refresh = functions.https.onCall((data, context) => refreshToken(context.auth.uid))
+  funcs.spotify_client_credentials = functions.https.onCall(getClientCredential)
 }

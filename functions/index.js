@@ -23,7 +23,7 @@ app.set('view engine', 'pug')
 
 const router = express.Router()
 
-require(__src + 'spotify/auth')(router)
+require(__src + 'spotify/auth')(router, exports)
 
 app.use(config.func_base_url, router)
 // Expose Express API as a single Cloud Function:
