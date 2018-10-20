@@ -42,12 +42,12 @@ export default {
         'response_type=code&' +
         `client_id=${keys.spotify.client_id}&` +
         `scope=${encodeURIComponent(scopes)}&` +
-        `redirect_uri=${encodeURIComponent(configs.api_url + '/spotify/auth')}`
+        `redirect_uri=${encodeURIComponent(configs.func_host + configs.func_base_url + '/spotify/auth')}`
       const newWindow = window.open(theURL, 'spotify-login', 'height=500,width=700')
       if (window.focus) newWindow.focus()
 
       function spotifyLoginCallback (event) {
-        if (event.origin !== configs.api_host) {
+        if (event.origin !== configs.func_host) {
           return
         }
         window.removeEventListener('message', spotifyLoginCallback, false)

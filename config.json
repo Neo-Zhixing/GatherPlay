@@ -1,5 +1,5 @@
 {
-  "base_host": "http://localhost:8080",
-  "api_url": "http://localhost:5001/gather-play/us-central1/api",
-  "api_host": "http://localhost:5001"
+  "host": "http://localhost:8080",
+  "func_host": "http://localhost:8080",
+  "func_base_url": "/api"
 }
