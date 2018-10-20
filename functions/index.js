@@ -22,5 +22,5 @@ require(__src + 'spotify/auth')(app)
 exports.api = functions.https.onRequest(app)
 
 const auth_functions = require('./src/auth')
-exports.user_create = auth_functions.create
-exports.user_delete = auth_functions.delete
+//exports.user_create = auth_functions.create
+//exports.user_delete = auth_functions.delete

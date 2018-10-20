@@ -9,6 +9,10 @@ const qs = require('qs')
 
 const spotifyAuthServer = axios.create({
   baseURL: 'https://accounts.spotify.com/api',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Authorization': "Basic " + Buffer.from(spotifyKeys.client_id + ':' + spotifyKeys.client_secret).toString('base64'),
+  }
 })
 
 const spotifyServer = axios.create({
@@ -25,10 +29,11 @@ function setSpotifyAuthData(data) {
   console.log(spotifyServer.defaults.headers['Authorization'])
 }
 
-function login(request, response) {
+function login(req, res) {
   // query.code Required. Came from the first step of OAuth.
-  if (!request.query.code) {
-    response.status(400).send({
+  console.log()
+  if (!req.query.code) {
+    res.status(400).send({
       message: "No Auth Code"
     })
     return
@@ -36,76 +41,75 @@ function login(request, response) {
   let userProfile = null
 
   // Post Spotify server for code verification & authorization code
-    spotifyAuthServer.post('/token', qs.stringify({
-      grant_type: 'authorization_code',
-      code: request.query.code,
-      redirect_uri: config.api_url + '/spotify/auth',
-      client_id: spotifyKeys.client_id,
-      client_secret: spotifyKeys.client_secret,
-    }), {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': "Basic " + Buffer.from(spotifyKeys.client_id + ':' + spotifyKeys.client_secret).toString('base64'),
-      }
+  return spotifyAuthServer.post('/token', qs.stringify({
+    grant_type: 'authorization_code',
+    code: req.query.code,
+    redirect_uri: config.api_url + '/spotify/auth',
+  }))
+    .then(response => {
+      setSpotifyAuthData(response.data) // Save Auth Data
+      return spotifyServer.get('/me') // Request user profile
     })
-      .then(r => {
-        setSpotifyAuthData(r.data) // Save Auth Data
-        return spotifyServer.get('/me') // Request user profile
-      }, error => {
-        if (error.response && error.response.data) {
-          console.log(error.request)
-          response.status(error.response.status).send({
-            request: error.request.data,
-            response: error.response.data,
-          })
-        } else {
-          response.status(500).send("Server Unknown Error")
-          console.log(error)
-        }
-      })
-      .then(r => {
-        userProfile = r.data
-        return admin.auth().getUserByEmail(r.data.email) // Query user by email in firebase
-      }, error => {
-        // Failed to get the profile
-        if (error.response && error.response.data) {
-          response.status(error.response.status).send({
-            request: error.request.data,
-            response: error.response.data,
-          })
-        } else {
-          response.status(500).send("Server Unknown Error during profile fetching")
-          console.log(error)
-        }
-      })
-      .catch(error => {
-        if (error.code === 'auth/user-not-found') {
-          // No User
-          return admin.auth().createUser({
-            displayName: userProfile.display_name,
-            email: userProfile.email,
-            emailVerified: true,
-          })
-        }
-        // Unknown Error
-        throw error
-      })
-      .then(user => {
-        // Now we have the user
-        return admin.auth().createCustomToken(user.uid)
-      })
-      .then(customToken => {
-        response.render('spotify-auth-login', {
-          spotify: spotifyAuthData,
-          token: customToken,
-          host: config.base_host,
+    .catch(error => {
+      if (error.response && error.response.data) {
+        console.log(error.request)
+        res.status(error.response.status).send(error.response.data)
+      } else {
+        res.status(500).send("Server Unknown Error")
+        console.log(error)
+      }
+      return Promise.reject(error)
+    })
+    .then(r => {
+      userProfile = r.data
+      return admin.auth().getUserByEmail(r.data.email) // Query user by email in firebase
+    })
+    .catch(error => {
+      if (error.code === 'auth/user-not-found') {
+        // No User
+        return admin.auth().createUser({
+          displayName: userProfile.display_name,
+          email: userProfile.email,
+          emailVerified: true,
         })
+      }
+      // Unknown Error
+      return Promise.reject(error)
+    })
+    .then(user => {
+      // Now we have the user
+      return admin.auth().createCustomToken(user.uid)
+    })
+    .then(customToken => {
+      res.render('spotify-auth-login', {
+        spotify: spotifyAuthData,
+        token: customToken,
+        host: config.base_host,
       })
-      .catch(() => {
-        console.log("Unknown Error")
-      })
+    })
+    .catch(() => {
+      console.log("Unknown Error")
+    })
 }
 
+function getClientCredential (req, res) {
+  return spotifyAuthServer.post('/token', qs.stringify({
+    grant_type: 'client_credentials',
+  }))
+    .then(response => {
+      res.send(response.data)
+    })
+    .catch(error => {
+      if (error.response && error.response.data) {
+        console.log(error.request)
+        res.status(error.response.status).send(error.response.data)
+      } else {
+        res.status(500).send("Server Unknown Error")
+        console.log(error)
+      }
+    })
+}
 module.exports = router => {
   router.get('/spotify/auth', login)
+  router.get('/spotify/credential', getClientCredential)
 }
