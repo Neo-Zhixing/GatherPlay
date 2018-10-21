@@ -174,7 +174,7 @@ function refreshToken(uid) {
 const authorization = require(__src + 'middlewares/authorization')
 module.exports = (router, funcs) => {
   router.get('/spotify/auth', login)
-  router.get('/spotify/credential', authorization, (req, res) => {
+  router.get('/spotify/credential', (req, res) => {
     getClientCredential(req.user.uid)
       .then(result => {
         res.send(result)
@@ -192,6 +192,6 @@ module.exports = (router, funcs) => {
         console.log(error)
       })
   })
-  funcs.spotify_refresh = functions.https.onCall((data, context) => refreshToken(context.auth.uid))
-  funcs.spotify_client_credentials = functions.https.onCall(getClientCredential)
+  funcs.spotifyRefreshToken = functions.https.onCall((data, context) => refreshToken(context.auth.uid))
+  funcs.spotifyClientCredentials = functions.https.onCall(getClientCredential)
 }

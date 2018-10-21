@@ -51,12 +51,6 @@ export default {
           return
         }
         this.doc = doc.data()
-        if (this.host) { // Only pull when the user is a host
-          this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
-          this.$store.dispatch('spotify/pullCurrentPlayback')
-        } else {
-          this.$store.commit('spotify/setPlayingTrackPullInterval', null)
-        }
         this.loading = false
       })
     docRef

@@ -23,7 +23,6 @@
       </v-list-tile-content>
     </v-list-tile>
   </v-list-group>
-  <v-progress-circular indeterminate v-else-if="loading"/>
   <v-dialog
     lazy
     v-else
@@ -49,30 +48,21 @@
 </template>
 
 <script>
-import firebase from '@/plugins/firebase'
+import firebase, { auth, functions } from '@/plugins/firebase'
 import UserLogin from './UserLogin'
+import { mapState } from 'vuex'
 export default {
   name: 'UserStatusTiles',
   components: {
     UserLogin,
   },
-  data () {
-    return {
-      user: null,
-      loading: true,
-    }
-  },
-  mounted () {
-    firebase.auth().onAuthStateChanged((user) => {
-      this.loading = false
-      this.user = user
-    })
-  },
   methods: {
     logout () {
-      this.loading = true
       return firebase.auth().signOut()
     },
   },
+  computed: mapState({
+    user: state => state.user
+  })
 }
 </script>

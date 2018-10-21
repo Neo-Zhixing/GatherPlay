@@ -1,12 +1,46 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import VuexPersistence from 'vuex-persist'
 
+import { auth } from '@/plugins/firebase'
 import spotify from './spotify'
+
+const vuexLocal = new VuexPersistence({
+  storage: window.localStorage,
+  reducer: (state) => ({
+    user: state.user,
+    eventID: state.eventID,
+    spotify: {
+      authenticated: state.spotify.authenticated,
+      accessToken: state.spotify.accessToken,
+      accessTokenExpires: state.spotify.accessTokenExpires,
+    },
+  }),
+})
 
 Vue.use(Vuex)
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
+  state: {
+    user: auth.currentUser,
+  },
+  mutations: {
+    changeAuthState (state, user) {
+      state.user = user
+    },
+  },
+  actions: {
+  },
   modules: {
     spotify: spotify,
-  }
+  },
+  plugins: [
+    vuexLocal.plugin,
+  ],
 })
+
+auth.onAuthStateChanged(user => {
+  store.commit('changeAuthState', user)
+})
+
+export default store

@@ -95,12 +95,6 @@ export default {
   },
   methods: {
     updateProvider () {
-      if (this.event || this.spotifyAuthState) {
-        this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
-        this.$store.dispatch('spotify/pullCurrentPlayback')
-      } else {
-        this.$store.commit('spotify/setPlayingTrackPullInterval', null)
-      }
     },
     signout () {
       auth.signOut()
