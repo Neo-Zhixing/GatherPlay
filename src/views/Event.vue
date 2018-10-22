@@ -38,59 +38,11 @@ export default {
     }
   },
   mounted () {
-    const docRef = db.collection('events').doc(this.$route.params.event_id)
-    docRef.get()
-      .then(doc => {
-        if (!doc.exists) {
-          this.loading = false
-          return
-        }
-        this.$store.commit('changeEvent', this.$route.params.event_id)
-        if (!this.user) {
-          this.$router.replace('/')
-          return
-        }
-        this.doc = doc.data()
-        this.loading = false
-      })
-    docRef
-      .onSnapshot(doc => {
-        this.doc = doc.data()
-      })
+    console.log('ddd')
   },
   computed: {
-    ...mapState({
-      playingTrack: state => state.spotify.playingTrack,
-      playing: state => state.spotify.playing,
-      user: state => state.user,
-    }),
-    host () {
-      const hostornot = this.user && this.doc.host === this.user.uid
-      console.log('AM I THE HOST?', this.user.uid)
-      return hostornot
-    }
   },
   watch: {
-    playing () {
-      if (!this.doc || this.doc.playlist.length == 0) {
-        return
-      }
-      if (this.playing) {
-        return
-      }
-      console.log('Requesting new song')
-      this.$store.getters['spotify/client']
-        .then(client => {
-          return client.put('/me/player/play', {
-            uris: [this.doc.playlist[0].uri]
-          })
-        })
-        .then(() => {
-          return db.collection('events').doc(this.$route.params.event_id).update({
-            playlist: firebase.firestore.FieldValue.arrayRemove(this.doc.playlist[0]),
-          })
-        })
-    },
   }
 }
 </script>

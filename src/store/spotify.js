@@ -6,11 +6,7 @@ import { auth, functions } from '@/plugins/firebase'
 
 import store from './index'
 
-function encodeURL (data) {
-  return Object.keys(data).map(
-    key => [key, data[key]].map(encodeURIComponent).join('=')
-  ).join('&')
-}
+import { encodeURL } from '@/utils'
 
 const client = axios.create({
   baseURL: 'https://api.spotify.com/v1/',
@@ -100,7 +96,7 @@ export default {
     },
     request ({ commit, state }) {
       const expireTime = state.accessTokenExpires
-      if (expireTime && (expireTime - ((Date.now()/1000) | 0) > 10)) {
+      if (expireTime && (expireTime - ((Date.now() / 1000) | 0) > 10)) {
         // Expiration happens in the future. Use the token directly.
         client.defaults.headers['Authorization'] = 'Bearer' + ' ' + state.accessToken
         return Promise.resolve(client)

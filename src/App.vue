@@ -1,35 +1,39 @@
-<template>
-  <v-app>
-    <v-navigation-drawer
+<template lang="pug">
+  v-app
+    v-navigation-drawer(
       persistent
       v-model="drawer"
       enable-resize-watcher
       clipped
       fixed
       app
-    >
-      <v-list>
-        <user-status-tiles/>
-      </v-list>
-    </v-navigation-drawer>
-    <v-toolbar
+    )
+      v-list
+        user-status-tiles
+        v-list-tile(avatar)
+          v-list-tile-avatar
+            v-icon near_me
+          v-list-tile-content
+            v-list-tile-title Events Nearby
+        v-list-tile(avatar href="https://lyricly.me")
+          v-list-tile-avatar
+            v-icon equalizer
+          v-list-tile-content
+            v-list-tile-title Lyricly
+        router-view(name="nav")
+    v-toolbar(
       app
       clipped-left
-    >
-      <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-      <v-toolbar-title v-text="title"></v-toolbar-title>
-    </v-toolbar>
-    <v-content>
-      <router-view/>
-    </v-content>
-    <v-footer fixed app>
-      <span>&copy; 2018</span>
-    </v-footer>
-  </v-app>
+    )
+      v-toolbar-side-icon(@click.stop="drawer = !drawer")
+      v-toolbar-title Gather Play
+    v-content: router-view
+    v-footer(fixed app)
+      span &copy; 2018
 </template>
 
 <script>
-import UserStatusTiles from '@/components/UserStatusTiles'
+import UserStatusTiles from './components/UserStatusTiles'
 export default {
   name: 'App',
   components: {
@@ -37,12 +41,8 @@ export default {
   },
   data () {
     return {
-      drawer: true,
-      title: 'Gather Play'
+      drawer: false,
     }
-  }
+  },
 }
 </script>
-
-<style>
-</style>
