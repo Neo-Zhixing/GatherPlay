@@ -18,7 +18,9 @@ import {
   VSubheader,
   VMenu,
   VTextField,
-  VChip,
+  VForm,
+  VTabs,
+  VCheckbox,
   transitions
 } from 'vuetify'
 import 'vuetify/src/stylus/app.styl'
@@ -42,7 +44,9 @@ Vue.use(Vuetify, {
     VSubheader,
     VMenu,
     VTextField,
-    VChip,
+    VForm,
+    VTabs,
+    VCheckbox,
     transitions
   },
   theme: {

@@ -9,17 +9,7 @@
       app
     )
       v-list
-        user-status-tiles
-        v-list-tile(avatar)
-          v-list-tile-avatar
-            v-icon near_me
-          v-list-tile-content
-            v-list-tile-title Events Nearby
-        v-list-tile(avatar href="https://lyricly.me")
-          v-list-tile-avatar
-            v-icon equalizer
-          v-list-tile-content
-            v-list-tile-title Lyricly
+        main-nav-drawer
         router-view(name="nav")
     v-toolbar(
       app
@@ -27,17 +17,26 @@
     )
       v-toolbar-side-icon(@click.stop="drawer = !drawer")
       v-toolbar-title Gather Play
+      v-spacer
+      v-text-field(
+        flat
+        label="Search"
+        prepend-inner-icon="search"
+        solo-inverted
+        hide-details
+        single-line
+      )
     v-content: router-view
     v-footer(fixed app)
       span &copy; 2018
 </template>
 
 <script>
-import UserStatusTiles from './components/UserStatusTiles'
+import MainNavDrawer from '@/components/MainNavDrawer'
 export default {
   name: 'App',
   components: {
-    UserStatusTiles
+    MainNavDrawer,
   },
   data () {
     return {

@@ -63,18 +63,17 @@ export default {
         redirect_uri: configs.func_host + configs.func_base_url + '/spotify/auth',
       })
       const newWindow = window.open(theURL, 'spotify-login', 'height=500,width=700')
-      if (!window.focus) newWindow.focus()
+      if (window.focus) newWindow.focus()
 
       return new Promise((resolve, reject) => {
-        const timer = setTimeout(reject, 15000)
         function spotifyLoginCallback (event) {
           if (event.origin !== configs.func_host) {
             return
           }
           window.removeEventListener('message', spotifyLoginCallback, false)
+          console.log(event.data)
           auth.signInWithCustomToken(event.data.token)
           commit('authenticate', event.data.spotify)
-          clearTimeout(timer)
           resolve(event.data.spotify)
         }
         window.addEventListener('message', spotifyLoginCallback, false)

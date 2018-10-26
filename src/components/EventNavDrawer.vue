@@ -16,16 +16,8 @@
 </template>
 
 <script>
-import UserStatusTiles from './UserStatusTiles'
-import { mapState } from 'vuex'
 export default {
   name: 'DrawerList',
-  components: {
-    UserStatusTiles,
-  },
-  computed: mapState({
-    event: state => state.user
-  }),
 }
 </script>
 
