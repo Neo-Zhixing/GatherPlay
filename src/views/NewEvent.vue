@@ -77,7 +77,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import config from '@/../config.json'
+import config from '@/config.json'
 import firebase, { db } from '@/plugins/firebase'
 const authOptions = [
   { text: 'Open', value: 0, des: 'Anyone can join the event' },
@@ -127,8 +127,8 @@ export default {
           }
           const form = Object.assign({}, this.form)
           if (form.password === '') form.password = null
-          form.location = form.enable_location && !form.realtime_location ?
-            new firebase.firestore.GeoPoint(form.location.lat, form.location.lng) : null
+          form.location = form.enable_location && !form.realtime_location
+            ? new firebase.firestore.GeoPoint(form.location.lat, form.location.lng) : null
           return docRef.set(form)
             .then(() => {
               this.$emit('created', this.eventID)

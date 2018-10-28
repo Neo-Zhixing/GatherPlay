@@ -10,6 +10,9 @@ module.exports = function(req, res, next) {
     req.user = decodedIdToken
     return next()
   }).catch((error) => {
-    res.status(401).send('Unauthorized - ID Token Verification Failed')
+    res.status(401).send({
+      message: 'Unauthorized - ID Token Verification Failed',
+      error: error,
+    })
   })
 }

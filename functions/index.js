@@ -4,12 +4,11 @@ global.__proj = __base + '../'
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 
-const keys = require(__base + 'keys.json')
-const config = require(__proj + 'config.json')
-admin.initializeApp({
-  credential: admin.credential.cert(keys['firebase_service_account']),
-  databaseURL: keys.firebase.databaseURL,
-})
+const url_config = functions.config().urls
+
+const adminConfig = JSON.parse(process.env.FIREBASE_CONFIG)
+adminConfig.credential = admin.credential.applicationDefault()
+admin.initializeApp(adminConfig)
 
 admin.firestore().settings({
   timestampsInSnapshots: true
@@ -25,7 +24,7 @@ const router = express.Router()
 
 require(__src + 'spotify/auth')(router, exports)
 
-app.use(config.func_base_url, router)
+app.use(url_config.func_base_url, router)
 // Expose Express API as a single Cloud Function:
 exports.api = functions.https.onRequest(app)
 

@@ -1,16 +1,16 @@
 const admin = require('firebase-admin')
 const functions = require('firebase-functions')
 const db = admin.firestore()
-const config = require(__proj + 'config.json')
-const keys = require(__base + 'keys.json').spotify
+const url_config = functions.config().urls
 const axios = require('axios')
 const qs = require('qs')
 
+const spotifyKeys = functions.config().spotify
 const spotifyAuthServer = axios.create({
   baseURL: 'https://accounts.spotify.com/api',
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
-    'Authorization': "Basic " + Buffer.from(keys.client_id + ':' + keys.client_secret).toString('base64'),
+    'Authorization': "Basic " + Buffer.from(spotifyKeys.id + ':' + spotifyKeys.secret).toString('base64'),
   }
 })
 
@@ -21,17 +21,16 @@ const spotifyServer = axios.create({
 function login(req, res) {
   // query.code Required. Came from the first step of OAuth.
   if (!req.query.code) {
-    res.status(400).send({
-      message: "No Auth Code"
-    })
-    return
+    const error = { message: "No Auth Code" }
+    res.status(400).send(error)
+    return Promise.reject(error)
   }
 
   // Post Spotify server for code verification & authorization code
   return spotifyAuthServer.post('/token', qs.stringify({
     grant_type: 'authorization_code',
     code: req.query.code,
-    redirect_uri: config.func_host + config.func_base_url + '/spotify/auth',
+    redirect_uri: url_config.func_host + url_config.func_base_url + '/spotify/auth',
   }))
     .then(response => {
       const spotifyAuthData = response.data
@@ -70,7 +69,7 @@ function login(req, res) {
           userProfileRef.get()
             .then(userProfile => {
               if (userProfile.exists) {
-                userProfileRef.update({
+                return userProfileRef.update({
                   'keys.spotify.access_token': spotifyAuthData.access_token,
                   'keys.spotify.refresh_token': spotifyAuthData.refresh_token,
                   'keys.spotify.expires': spotifyAuthData.expires_in + Date.now()/1000 | 0,
@@ -78,7 +77,7 @@ function login(req, res) {
                   'keys.spotify.scope': spotifyAuthData.scope,
                 })
               } else {
-                userProfileRef.set({
+                return userProfileRef.set({
                   keys: {
                     spotify: {
                       access_token: spotifyAuthData.access_token,
@@ -90,6 +89,8 @@ function login(req, res) {
                   }
                 })
               }
+            }).catch(error => {
+              console.log("Obtain user profile for " + user.uid + "failed because", error)
             })
             return admin.auth().createCustomToken(user.uid)
         })
@@ -100,11 +101,13 @@ function login(req, res) {
               expires_in: spotifyAuthData.expires_in,
             },
             token: customToken,
-            host: config.host,
+            host: url_config.host,
           })
+          return Promise.resolve()
         })
-        .catch(() => {
-          console.log("Unknown Error")
+        .catch(error => {
+          console.log("Unknown Error", error)
+          res.status(500).send(error)
         })
     })
 
@@ -178,6 +181,7 @@ module.exports = (router, funcs) => {
     getClientCredential(req.user.uid)
       .then(result => {
         res.send(result)
+        return Promise.resolve()
       })
       .catch(error => {
         console.log(error)
@@ -187,6 +191,7 @@ module.exports = (router, funcs) => {
     refreshToken(req.user.uid)
       .then(result => {
         res.send(result)
+        return Promise.resolve()
       })
       .catch(error => {
         console.log(error)

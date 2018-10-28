@@ -1,7 +1,7 @@
 import firebase from 'firebase/app'
 import firebaseui from 'firebaseui'
 import keys from '@/keys.json'
-import config from '@/../config.json'
+import config from '@/config.json'
 
 import 'firebase/auth'
 import 'firebase/firestore'

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 import keys from '@/keys.json'
-import configs from '@/../config.json'
+import configs from '@/config.json'
 import { auth, functions } from '@/plugins/firebase'
 
 import store from './index'
