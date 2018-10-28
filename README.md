@@ -1,5 +1,6 @@
 # Lyricly
 
+[![Build Status](https://travis-ci.com/Neo-Zhixing/GatherPlay.svg?branch=master)](https://travis-ci.com/Neo-Zhixing/GatherPlay)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b330587442154a3c91d43f81e8e5b603)](https://app.codacy.com/app/Neo-Zhixing/GatherPlay?utm_source=github.com&utm_medium=referral&utm_content=Neo-Zhixing/GatherPlay&utm_campaign=Badge_Grade_Settings)
 
 Bring the exhilaration of music to the gathering of people.
