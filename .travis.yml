@@ -1,6 +1,9 @@
 language: node_js
 sudo: false
-cache: yarn
+cache:
+  yarn: true
+  directories:
+    - node_modules
 node_js: lts/*
 branches:
   only:

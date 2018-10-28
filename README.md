@@ -1,7 +1,7 @@
 # Lyricly
 
-[![Build Status](https://travis-ci.com/Neo-Zhixing/GatherPlay.svg?branch=master)](https://travis-ci.com/Neo-Zhixing/GatherPlay)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b330587442154a3c91d43f81e8e5b603)](https://app.codacy.com/app/Neo-Zhixing/GatherPlay?utm_source=github.com&utm_medium=referral&utm_content=Neo-Zhixing/GatherPlay&utm_campaign=Badge_Grade_Settings)
+[![Build Status](https://travis-ci.com/Neo-Zhixing/GatherPlay.svg?branch=develop)](https://travis-ci.com/Neo-Zhixing/GatherPlay)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b330587442154a3c91d43f81e8e5b603?branch=develop)](https://app.codacy.com/app/Neo-Zhixing/GatherPlay?utm_source=github.com&utm_medium=referral&utm_content=Neo-Zhixing/GatherPlay&utm_campaign=Badge_Grade_Settings)
 
 Bring the exhilaration of music to the gathering of people.
 ![The Home Screen](https://challengepost-s3-challengepost.netdna-ssl.com/photos/production/software_photos/000/694/650/datas/gallery.jpg)
