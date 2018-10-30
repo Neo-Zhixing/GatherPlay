@@ -1,22 +1,47 @@
-<template>
-  <v-app>
-    <v-content>
-      <router-view/>
-    </v-content>
-  </v-app>
+<template lang="pug">
+  v-app
+    v-navigation-drawer(
+      persistent
+      v-model="drawer"
+      enable-resize-watcher
+      clipped
+      fixed
+      app
+    )
+      v-list
+        main-nav-drawer
+        router-view(name="nav")
+    v-toolbar(
+      app
+      clipped-left
+    )
+      v-toolbar-side-icon(@click.stop="drawer = !drawer")
+      v-toolbar-title Gather Play
+      v-spacer
+      v-text-field(
+        flat
+        label="Search"
+        prepend-inner-icon="search"
+        solo-inverted
+        hide-details
+        single-line
+      )
+    v-content: router-view
+    v-footer(fixed app)
+      span &copy; 2018
 </template>
 
 <script>
-  export default {
-    name: 'App',
-  }
+import MainNavDrawer from '@/components/MainNavDrawer'
+export default {
+  name: 'App',
+  components: {
+    MainNavDrawer,
+  },
+  data () {
+    return {
+      drawer: false,
+    }
+  },
+}
 </script>
-
-<style>
-  body {
-    overflow: hidden;
-  }
-  body::-webkit-scrollbar {
-    display: none;
-  }
-</style>

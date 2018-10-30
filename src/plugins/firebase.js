@@ -1,12 +1,12 @@
 import firebase from 'firebase/app'
 import firebaseui from 'firebaseui'
 import keys from '@/keys.json'
+import config from '@/config.json'
 
 import 'firebase/auth'
 import 'firebase/firestore'
-/*
-import 'firebase/messaging'
 import 'firebase/functions'
+/*
 import 'firebase/messaging'
 */
 firebase.initializeApp(keys.firebase)
@@ -22,6 +22,9 @@ const dbSettings = {
 db.settings(dbSettings)
 
 export const auth = firebase.auth()
+
+export const functions = firebase.functions()
+functions.emulatorOrigin = config.func_emulator_host || null
 
 export const AuthUI = new firebaseui.auth.AuthUI(firebase.auth())
 

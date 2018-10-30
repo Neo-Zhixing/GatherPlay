@@ -4,18 +4,18 @@ import Star from './star'
 import Rectangle from './rectangle'
 import Colors from './colors'
 
-Array.prototype.randomElement = function() {
+Array.prototype.randomElement = function () {
   return this[Math.floor(Math.random() * this.length)]
 }
 
 class Kaleidoscope extends Visualizer {
-  constructor(halt) {
+  constructor (halt) {
     super(halt)
-        
+
     this.halt = halt
     this.canvas = new Canvas('kaleidoscope')
     this.totalStars = 16
-    this.maxSize = (this.canvas.isMobile ? 1.2 : .5) * (window.innerHeight > window.innerWidth ? window.innerHeight : window.innerWidth)
+    this.maxSize = (this.canvas.isMobile ? 1.2 : 0.5) * (window.innerHeight > window.innerWidth ? window.innerHeight : window.innerWidth)
     this.minSize = this.maxSize / 5
     this.activeSize = this.halt ? this.maxSize : this.minSize
     this.sizeStep = [
@@ -23,14 +23,14 @@ class Kaleidoscope extends Visualizer {
       ((this.maxSize / this.totalStars) * 0.6),
       ((this.maxSize / this.totalStars) * 0.8)
     ]
-    this.radiusStep = [.1, .2, .3, .4, .5, .6, .7, .8, .9, 1, 1.1, 1.2]
+    this.radiusStep = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2]
     this.colorSchemes = Colors
     this.activeColorScheme = []
-    this.duration = 5000 
+    this.duration = 5000
     this.radiusDuration = this.duration
     this.colorDuration = this.duration
     this.backgroundDuration = this.duration
-    this.refreshRate = 1000/60
+    this.refreshRate = 1000 / 60
     this.model = {
       stars: { last: [],
         active: []
@@ -47,10 +47,10 @@ class Kaleidoscope extends Visualizer {
       this.buildSingleState(true)
     } else {
       this.pingSpotify(true)
-    } 
+    }
   }
 
-  setEventHooks() {
+  setEventHooks () {
     this.events.beforeInit = () => {
       this.setActiveColorScheme()
       this.initElements()
@@ -66,12 +66,12 @@ class Kaleidoscope extends Visualizer {
     }
   }
 
-  buildSingleState(init) {
+  buildSingleState (init) {
     this.activeSize = this.maxSize
 
     if (init) {
       this.initElements()
-    } 
+    }
 
     this.setActiveColorScheme()
     this.setColorState()
@@ -79,11 +79,11 @@ class Kaleidoscope extends Visualizer {
 
     if (!init) {
       this.tweenStarRadius()
-      this.tweenStarColor() 
+      this.tweenStarColor()
       this.tweenBackgroundColor()
     }
 
-    if (init) { 
+    if (init) {
       this.buildSingleState()
 
       setTimeout(() => {
@@ -93,7 +93,7 @@ class Kaleidoscope extends Visualizer {
     }
   }
 
-  initElements() {
+  initElements () {
     if (this.initialized === true) {
       return
     }
@@ -102,12 +102,12 @@ class Kaleidoscope extends Visualizer {
       let numPoints = 16
 
       if ((i + 1) % 2 === 0) { numPoints = 24 }
-      if ((i + 1) % 3 === 0) { numPoints = 8  }
+      if ((i + 1) % 3 === 0) { numPoints = 8 }
       if ((i + 1) % 4 === 0) { numPoints = 32 }
 
       let starState = {
-        x: this.canvas.width/2,
-        y: this.canvas.height/2,
+        x: this.canvas.width / 2,
+        y: this.canvas.height / 2,
         points: numPoints,
         color: 'rgb(255,255,255)',
         innerRadius: 0,
@@ -134,15 +134,15 @@ class Kaleidoscope extends Visualizer {
     this.initialized = true
   }
 
-  setRadiusState() {
+  setRadiusState () {
     let size = this.activeSize
 
     for (var i = 0; i < this.totalStars; i++) {
       size = parseInt(size - this.sizeStep.randomElement())
 
-      if (size < this.minSize ) {
+      if (size < this.minSize) {
         size = this.minSize
-      } 
+      }
 
       clearInterval(this.canvas.stars[i].radiusTween)
 
@@ -153,7 +153,7 @@ class Kaleidoscope extends Visualizer {
     }
   }
 
-  setColorState() { 
+  setColorState () {
     for (var i = 0; i < this.totalStars; i++) {
       clearInterval(this.canvas.stars[i].colorTween)
 
@@ -166,7 +166,7 @@ class Kaleidoscope extends Visualizer {
     }
   }
 
-  setBackgroundState(negative) {
+  setBackgroundState (negative) {
     clearInterval(this.canvas.background.colorTween)
 
     this.model.background.last = {
@@ -175,13 +175,13 @@ class Kaleidoscope extends Visualizer {
     }
 
     this.model.background.active = {
-      ...this.model.background.active, 
+      ...this.model.background.active,
       color: negative
     }
   }
 
-  tweenStarRadius(ms) {
-    let duration = ms ? ms : this.radiusDuration
+  tweenStarRadius (ms) {
+    let duration = ms || this.radiusDuration
 
     for (let i = 0; i < this.totalStars; i++) {
       let star = this.canvas.stars[i]
@@ -211,11 +211,11 @@ class Kaleidoscope extends Visualizer {
     }
   }
 
-  tweenRGB(duration, next, last, element, setColor) {
+  tweenRGB (duration, next, last, element, setColor) {
     let stepR = (parseInt(next[0]) - parseInt(last[0])) / (duration / this.refreshRate)
     let stepG = (parseInt(next[1]) - parseInt(last[1])) / (duration / this.refreshRate)
     let stepB = (parseInt(next[2]) - parseInt(last[2])) / (duration / this.refreshRate)
-    
+
     let tweenR = parseInt(last[0])
     let tweenG = parseInt(last[1])
     let tweenB = parseInt(last[2])
@@ -229,13 +229,13 @@ class Kaleidoscope extends Visualizer {
     }, this.refreshRate)
   }
 
-  tweenStarColor(ms) {
-    let duration = ms ? ms : this.colorDuration
+  tweenStarColor (ms) {
+    let duration = ms || this.colorDuration
 
     for (let i = 0; i < this.totalStars; i++) {
       let next = this.model.stars.active[i].color.slice(4, -1).split(',')
       let last = this.model.stars.last[i].color.slice(4, -1).split(',')
-      
+
       this.tweenRGB(duration, next, last, this.canvas.stars[i], (color) => {
         this.model.stars.active[i].color = color
         this.canvas.stars[i].update({ color })
@@ -243,18 +243,18 @@ class Kaleidoscope extends Visualizer {
     }
   }
 
-  tweenBackgroundColor(ms) {
-    let duration = ms ? ms : this.backgroundDuration
+  tweenBackgroundColor (ms) {
+    let duration = ms || this.backgroundDuration
     let next = this.model.background.active.color.slice(4, -1).split(',')
     let last = this.model.background.last.color.slice(4, -1).split(',')
 
     this.tweenRGB(duration, next, last, this.canvas.background, (color) => {
-      this.model.background.active.color = color 
+      this.model.background.active.color = color
       this.canvas.background.update({ color })
     })
   }
 
-  setActiveColorScheme() {
+  setActiveColorScheme () {
     let colors = this.colorSchemes.randomElement()
     let negative = colors.randomElement()
     let negArray = [negative, negative, negative, negative]
@@ -263,7 +263,7 @@ class Kaleidoscope extends Visualizer {
     this.setBackgroundState(negative)
   }
 
-  clearTweeningIntervals() {
+  clearTweeningIntervals () {
     if (this.initialized) {
       for (var i = 0; i < this.totalStars; i++) {
         clearInterval(this.canvas.stars[i].radiusTween)
@@ -273,24 +273,24 @@ class Kaleidoscope extends Visualizer {
       clearInterval(this.canvas.background.colorTween)
     }
   }
-  
-  setIntervalHooks() {
+
+  setIntervalHooks () {
     this.intervals.hooks.tatums = () => {
       this.radiusDuration = this.intervals.active.tatums.duration * 1000
-      this.setRadiusState()  
-      this.tweenStarRadius() 
+      this.setRadiusState()
+      this.tweenStarRadius()
     }
 
     this.intervals.hooks.segments = () => {
       const nextLoudness = this.intervals.next.segments ? this.intervals.next.segments.loudness_max : this.intervals.active.segments.loudness_max
       const lastLoudness = this.intervals.last.segments ? this.intervals.last.segments.loudness_max : this.intervals.active.segments.loudness_max
-      const activeLoudness = (this.intervals.active.segments.loudness_max + nextLoudness + lastLoudness)/3
+      const activeLoudness = (this.intervals.active.segments.loudness_max + nextLoudness + lastLoudness) / 3
       this.activeSize = (this.maxSize - (activeLoudness * -25)) + (this.trackFeatures.audio_features[0].loudness * -10)
     }
 
-    this.intervals.hooks.beats = () => {  
+    this.intervals.hooks.beats = () => {
       this.colorDuration = this.intervals.active.beats.duration * 1000
-      this.setColorState() 
+      this.setColorState()
       this.tweenStarColor()
     }
 
@@ -299,7 +299,7 @@ class Kaleidoscope extends Visualizer {
       this.setActiveColorScheme()
       this.tweenBackgroundColor()
     }
-  } 
+  }
 }
 
 export default Kaleidoscope

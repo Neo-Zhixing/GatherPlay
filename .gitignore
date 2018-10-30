@@ -3,7 +3,8 @@ node_modules
 /dist
 
 # Sensitive keys
-functions/src/keys.json
+functions/service_account.json
+functions/.runtimeconfig.json
 
 # local env files
 .env.local

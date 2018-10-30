@@ -69,7 +69,6 @@ class SpotifyConnect {
   }
 
   updateTrackProgress (delay, reset) {
-
     if (reset) {
       this.trackProgress = {
         progress: 0,
@@ -96,7 +95,6 @@ class SpotifyConnect {
       progress: playtime * 1000,
       timestamp: playtime * 1000
     }
-
   }
 
   determineInitialIntervals (type) {

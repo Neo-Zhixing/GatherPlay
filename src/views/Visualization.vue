@@ -46,7 +46,7 @@
         >
           <img src="@/assets/spotify-logo.svg" height="20"/> <span class="white-text">Sign in with Spotify</span>
         </v-btn>
-        <v-btn v-if="user || spotifyAuthState || event" @click="signout" class="transparent-button ma-0 mr-2">Sign Out</v-btn>
+        <v-btn v-if="user || spotifyAuthState" @click="signout" class="transparent-button ma-0 mr-2">Sign Out</v-btn>
 
         <v-btn v-if="event && (user || spotifyAuthState)" :to="`/event/${ event }`" class="transparent-button ma-0 mr-2">Playlist</v-btn>
       </v-layout>
@@ -85,7 +85,7 @@ export default {
     this.updateProvider()
 
     console.log(this.user)
-    if (this.user){
+    if (this.user) {
       console.log(this.user.isAnonymous)
     }
 
@@ -95,12 +95,6 @@ export default {
   },
   methods: {
     updateProvider () {
-      if (this.event || this.spotifyAuthState) {
-        this.$store.commit('spotify/setPlayingTrackPullInterval', 5000)
-        this.$store.dispatch('spotify/pullCurrentPlayback')
-      } else {
-        this.$store.commit('spotify/setPlayingTrackPullInterval', null)
-      }
     },
     signout () {
       auth.signOut()
@@ -133,11 +127,10 @@ export default {
         })
     },
     loadVisualization () {
-
       if (false) {
         Promise.all([
-          axios.get("/test.json"),
-          axios.get("/test.lrc")
+          axios.get('/test.json'),
+          axios.get('/test.lrc')
         ]).then(([analysisResponse, lyricsResponse]) => {
           this.visualizer.load(analysisResponse.data, lyricsResponse.data, 78000)
         })

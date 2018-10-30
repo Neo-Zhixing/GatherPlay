@@ -1,9 +1,9 @@
 import SpotifyConnect from './spotify-connect'
 
 class Visualizer extends SpotifyConnect {
-  constructor() {
+  constructor () {
     super()
-    
+
     this.active = false
     this.initialized = false
     this.loadingNext = false
@@ -22,7 +22,7 @@ class Visualizer extends SpotifyConnect {
     }
   }
 
-  startVisualizer(hideToast) {  
+  startVisualizer (hideToast) {
     if (!hideToast) {
       // ...
     }
@@ -40,20 +40,20 @@ class Visualizer extends SpotifyConnect {
     this.active = true
   }
 
-  stopVisualizer() { 
+  stopVisualizer () {
     this.events.beforeStop.bind(this).call()
     this.removeHooks()
-    this.updateTrackProgress(0, true) 
+    this.updateTrackProgress(0, true)
     this.active = false
     this.events.afterStop.bind(this).call()
   }
 
-  processResponse(response) {
+  processResponse (response) {
     this.updateTrackProgress()
 
     const songsInSync = true
     const syncError = 1501
-    //const syncError = 0
+    // const syncError = 0
 
     const getData = (noToast) => {
       const timestamp = window.performance.now()
@@ -62,7 +62,7 @@ class Visualizer extends SpotifyConnect {
         this.getTrackFeatures(),
         this.getTrackAnalysis()
       ]).then((responses) => {
-        console.log(responses[0]);
+        console.log(responses[0])
         this.loadingNext = false
         this.stopVisualizer()
         this.trackFeatures = responses[0]
@@ -88,7 +88,7 @@ class Visualizer extends SpotifyConnect {
       }
 
       return this.pingSpotify()
-    } 
+    }
 
     if (!this.active) {
       if (songsInSync && this.loadingNext) {
@@ -100,18 +100,18 @@ class Visualizer extends SpotifyConnect {
       if (songsInSync) {
         return this.pingSpotify()
       }
-      
+
       getData()
     }
   }
 
-  pingSpotify(skipDelay) {
+  pingSpotify (skipDelay) {
     setTimeout(() => {
       this.getCurrentlyPlaying()
-      .then((response) => this.processResponse(response))
-      .catch((err) => this.processResponse(err))
-    }, skipDelay ? 0 : 1000)    
+        .then((response) => this.processResponse(response))
+        .catch((err) => this.processResponse(err))
+    }, skipDelay ? 0 : 1000)
   }
 }
- 
-export default Visualizer 
+
+export default Visualizer

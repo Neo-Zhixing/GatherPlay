@@ -11,29 +11,23 @@ const vuexLocal = new VuexPersistence({
     user: state.user,
     eventID: state.eventID,
     spotify: {
-      authData: state.spotify.authData,
-    }
+      authenticated: state.spotify.authenticated,
+      accessToken: state.spotify.accessToken,
+      accessTokenExpires: state.spotify.accessTokenExpires,
+    },
   }),
 })
 
 Vue.use(Vuex)
 
-auth.onAuthStateChanged(user => {
-  store.commit('changeAuthState', user)
-})
-
 const store = new Vuex.Store({
   state: {
     user: auth.currentUser,
-    eventID: null,
   },
   mutations: {
     changeAuthState (state, user) {
       state.user = user
     },
-    changeEvent (state, id) {
-      state.eventID = id
-    }
   },
   actions: {
   },
@@ -44,4 +38,9 @@ const store = new Vuex.Store({
     vuexLocal.plugin,
   ],
 })
+
+auth.onAuthStateChanged(user => {
+  store.commit('changeAuthState', user)
+})
+
 export default store

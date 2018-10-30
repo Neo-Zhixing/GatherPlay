@@ -8,14 +8,17 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     {
-      path: '/event/:event_id',
+      path: '/e/:event_id',
       name: 'event',
-      component: () => import(/* webpackChunkName: "event" */ './views/Event.vue'),
+      components: {
+        default: () => import(/* webpackChunkName: "event" */ '@/views/Event.vue'),
+        nav: () => import(/* webpackChunkName: "event" */ '@/components/EventNavDrawer.vue'),
+      }
     },
     {
       path: '/',
       name: 'visualization',
-      component: () => import(/* webpackChunkName: "visualization" */ './views/Visualization.vue'),
+      component: () => import(/* webpackChunkName: "visualization" */ '@/views/Visualization.vue'),
     }
   ]
 })

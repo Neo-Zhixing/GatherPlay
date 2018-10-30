@@ -1,0 +1,6 @@
+{
+  "host": "http://localhost:8080",
+  "func_host": "http://localhost:8080",
+  "func_base_url": "/api",
+  "func_emulator_host": "http://localhost:5001"
+}

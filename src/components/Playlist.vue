@@ -85,84 +85,84 @@
 </template>
 
 <script>
-  import firebase, { db } from '@/plugins/firebase'
-  import { mapState } from 'vuex'
-  import VListTileAction from 'vuetify/src/components/VList/VListTileAction'
+import firebase, { db } from '@/plugins/firebase'
+import { mapState } from 'vuex'
+import VListTileAction from 'vuetify/src/components/VList/VListTileAction'
 
-  export default {
-    name: 'Playlist',
-    components: { VListTileAction },
-    props: ['event', 'list', 'playing'],
-    data () {
-      return {
-        trackSearch: {
-          loading: false,
-          items: [],
-          keyword: null,
-          result: null,
-        },
-      }
-    },
-    watch: {
-      'trackSearch.keyword' (keyword) {
-        !this.trackSearch.loading && keyword && keyword !== this.trackSearch.result && this.search(keyword)
-      }
-    },
-    methods: {
-      skip () {
-        this.$store.getters['spotify/client']
-          .then(client => {
-            return client.put('/me/player/play', {
-              uris: [this.list[0].uri]
-            })
-          })
-          .then(() => {
-            return db.collection('events').doc(this.$route.params.event_id).update({
-              playlist: firebase.firestore.FieldValue.arrayRemove(this.list[0]),
-            })
-          })
+export default {
+  name: 'Playlist',
+  components: { VListTileAction },
+  props: ['event', 'list', 'playing'],
+  data () {
+    return {
+      trackSearch: {
+        loading: false,
+        items: [],
+        keyword: null,
+        result: null,
       },
-      login () {
-        this.$store.dispatch('spotify/login')
-      },
-      search (keyword) {
-        this.trackSearch.loading = true
-        this.$store.getters['spotify/client']
-          .then(client => {
-            return client.get('/search', {
-              params: {
-                q: keyword,
-                type: 'track',
-                limit: 5,
-              }
-            })
+    }
+  },
+  watch: {
+    'trackSearch.keyword' (keyword) {
+      !this.trackSearch.loading && keyword && keyword !== this.trackSearch.result && this.search(keyword)
+    }
+  },
+  methods: {
+    skip () {
+      this.$store.getters['spotify/client']
+        .then(client => {
+          return client.put('/me/player/play', {
+            uris: [this.list[0].uri]
           })
-          .then(response => {
-            this.trackSearch.items = response.data.tracks.items
-            this.trackSearch.loading = false
-          }).catch(error => {
+        })
+        .then(() => {
+          return db.collection('events').doc(this.$route.params.event_id).update({
+            playlist: firebase.firestore.FieldValue.arrayRemove(this.list[0]),
+          })
+        })
+    },
+    login () {
+      this.$store.dispatch('spotify/login')
+    },
+    search (keyword) {
+      this.trackSearch.loading = true
+      this.$store.getters['spotify/client']
+        .then(client => {
+          return client.get('/search', {
+            params: {
+              q: keyword,
+              type: 'track',
+              limit: 5,
+            }
+          })
+        })
+        .then(response => {
+          this.trackSearch.items = response.data.tracks.items
+          this.trackSearch.loading = false
+        }).catch(error => {
           this.trackSearch.loading = false
         })
-      },
-      addTrack () {
-        this.trackSearch.result.proposer = this.user.uid
-        db.collection('events').doc(this.event).update({
-          playlist: firebase.firestore.FieldValue.arrayUnion(this.trackSearch.result)
-        })
-        this.trackSearch.result = null
-      },
-      removeTrack (track) {
-        db.collection('events').doc(this.event).update({
-          playlist: firebase.firestore.FieldValue.arrayRemove(track)
-        })
-      }
     },
-    computed: {
-      user () {
-        return this.$store.state.user
-      },
+    addTrack () {
+      this.trackSearch.result.proposer = this.user.uid
+      db.collection('events').doc(this.event).update({
+        playlist: firebase.firestore.FieldValue.arrayUnion(this.trackSearch.result)
+      })
+      this.trackSearch.result = null
     },
-  }
+    removeTrack (track) {
+      db.collection('events').doc(this.event).update({
+        playlist: firebase.firestore.FieldValue.arrayRemove(track)
+      })
+    }
+  },
+  computed: {
+    user () {
+      return this.$store.state.user
+    },
+  },
+}
 </script>
 
 <style scoped>
