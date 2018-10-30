@@ -40,7 +40,7 @@
         v-icon library_add
       v-list-tile-content
         v-list-tile-title Create New Event
-    v-list-tile(avatar)
+    v-list-tile(avatar :to="{ name: 'nearby' }")
       v-list-tile-avatar
         v-icon near_me
       v-list-tile-content
@@ -75,7 +75,7 @@ export default {
     },
     created (eventID) {
       this.newEventDialog = false
-      this.$router.push({ name: 'event', params: { event_id: eventID }})
+      this.$router.push({ name: 'event', params: { event_id: eventID } })
     },
   },
   computed: mapState({
