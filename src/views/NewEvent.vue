@@ -50,8 +50,8 @@
         span Location
         small Help your guests find the event
       v-stepper-content(:step="3")
-        v-switch(label="Enable" v-model="form.enable_location")
-        v-switch(label="Use my Realtime Location" :disabled="!form.enable_location" v-model="form.realtime_location")
+        v-switch(label="Enable" v-model="form.enable_location").ml-3
+        v-switch(label="Use my Realtime Location" v-show="form.enable_location" v-model="form.realtime_location").ml-3
         googlemaps-map(
           v-if="form.enable_location && !form.realtime_location"
           style="height: 10rem;"
@@ -71,8 +71,8 @@
           )
     v-card-actions
       v-spacer
-      v-btn(flat @click="createEvent" :disabled="!formValid" :loading="loading") Create
-      v-btn(flat @click="$emit('cancel')") Cancel
+      v-btn(@click="createEvent" :disabled="!formValid" :loading="loading") Create
+      v-btn(@click="$emit('cancel')") Cancel
 </template>
 
 <script>

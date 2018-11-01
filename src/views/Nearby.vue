@@ -1,44 +1,45 @@
 <template lang="pug">
-  googlemaps-map(
-    :center="center"
-    :zoom="15"
-    style="height: 100%;"
-    @idle="map => mapBounds = map.getBounds()"
-  )
-    googlemaps-user-position(@update:position="updateUserPosition")
+  v-container(fill-height fluid).pa-0: v-layout
+    v-flex(xs12 sm8 ref="map")
+    v-flex(xs12 sm4): v-list
+      v-list-tile(v-for="event in events" :key="event.id")
+        v-list-tile-content
+          v-list-tile-title(v-text="event.name")
+          v-list-tile-sub-title(v-html="event.description")
 </template>
 <script>
 import firebase, { db } from '@/plugins/firebase'
+import Map from '@/plugins/map'
+
+const pointToGeoPoint = point => new firebase.firestore.GeoPoint(point.lat, point.lng)
+
 export default {
   name: 'Nearby',
   data () {
     return {
-      center: { lat: 0, lng: 0 },
-      mapBounds: null,
+      events: [],
     }
   },
-  methods: {
-    updateUserPosition (event) {
-      this.center.lat = event.lat
-      this.center.lng = event.lng
-    },
+  mounted () {
+    this.map = new Map(this.$refs['map'])
+    this.map.moveEnd = this.mapMoveEnd
   },
-  watch: {
-    mapBounds (bounds) {
-      const pointToGeoPoint = point => new firebase.firestore.GeoPoint(point.lat(), point.lng())
+  methods: {
+    mapMoveEnd () {
+      const bounds = this.map.getBounds()
       db.collection('events')
-        .where('location', '>', pointToGeoPoint(bounds.getNorthEast()))
-        .where('location', '<', pointToGeoPoint(bounds.getSouthWest()))
+        .where('location', '<', pointToGeoPoint(bounds.ne))
+        .where('location', '>', pointToGeoPoint(bounds.sw))
         .get()
         .then(snapshot => {
-          console.log(snapshot)
+          this.events = snapshot.docs.map(event => {
+            const data = event.data()
+            data.id = event.id
+            return data
+          })
+          this.map.addMarkers(this.events)
         })
-      console.log(bounds)
-    },
+    }
   },
 }
 </script>
-
-<style scoped>
-
-</style>
