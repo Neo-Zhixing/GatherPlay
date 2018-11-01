@@ -31,7 +31,7 @@ export default class LeafletMap {
     this.map = map
     Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      subdomains: ['a', 'b', 'c']
+      subdomains: ['a', 'b', 'c'],
     }).addTo(map)
     map.locate({ setView: true, maxZoom: zoom })
       .on('locationfound', onLocationFound)
@@ -43,7 +43,7 @@ export default class LeafletMap {
     const bounds = this.map.getBounds()
     return {
       ne: bounds.getNorthEast(),
-      sw: bounds .getSouthWest(),
+      sw: bounds.getSouthWest(),
     }
   }
   addMarkers (events) {
@@ -54,7 +54,10 @@ export default class LeafletMap {
         return
       }
       this.eventMarkers.set(event.id, event)
-      Leaflet.marker({ lat: event.location.latitude, lng: event.location.longitude }).addTo(this.map)
+      const marker = Leaflet.marker({ lat: event.location.latitude, lng: event.location.longitude })
+      marker.bindTooltip(event.name)
+      marker.on('click', () => this.selectEvent ? this.selectEvent(event) : null)
+      marker.addTo(this.map)
     })
     // TODO: Remove Extra Markers
   }
