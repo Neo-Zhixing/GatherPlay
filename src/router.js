@@ -16,9 +16,14 @@ export default new Router({
       }
     },
     {
+      path: '/nearby',
+      name: 'nearby',
+      component: () => import(/* webpackChunkName: "event" */ '@/views/Nearby.vue')
+    },
+    {
       path: '/',
       name: 'visualization',
       component: () => import(/* webpackChunkName: "visualization" */ '@/views/Visualization.vue'),
-    }
+    },
   ]
 })
