@@ -34,7 +34,7 @@ export default class LeafletMap {
       subdomains: ['a', 'b', 'c'],
     }).addTo(map)
     map.locate({ setView: true, maxZoom: zoom })
-      .on('locationfound', onLocationFound)
+      .on('locationfound', event => this.onLocationFound(event))
 
     map.on('movestart', event => this.moveStart ? this.moveStart(event) : null)
       .on('moveend', event => this.moveEnd ? this.moveEnd(event) : null)
@@ -61,10 +61,12 @@ export default class LeafletMap {
     })
     // TODO: Remove Extra Markers
   }
+  onLocationFound (event) {
+    Leaflet.marker(event.latlng, { icon: MyLocationIcon }).addTo(this.map)
+    localStorage.setItem(LocalStorageKey.lat, event.latlng.lat)
+    localStorage.setItem(LocalStorageKey.lng, event.latlng.lng)
+    if (this.locationFound) this.locationFound(event.latlng)
+  }
 }
 
-function onLocationFound (event) {
-  Leaflet.marker(event.latlng, { icon: MyLocationIcon }).addTo(this)
-  localStorage.setItem(LocalStorageKey.lat, event.latlng.lat)
-  localStorage.setItem(LocalStorageKey.lng, event.latlng.lng)
-}
+

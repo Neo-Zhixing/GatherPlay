@@ -35,7 +35,7 @@
         v-icon input
       v-list-tile-content
         v-list-tile-title Login
-    v-list-tile(avatar @click="newEventDialog = true")
+    v-list-tile(v-if="user && !user.isAnonymous" avatar @click="newEventDialog = true")
       v-list-tile-avatar
         v-icon library_add
       v-list-tile-content

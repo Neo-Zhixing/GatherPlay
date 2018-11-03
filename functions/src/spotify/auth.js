@@ -105,11 +105,11 @@ function login(req, res) {
           })
           return Promise.resolve()
         })
-        .catch(error => {
-          console.log("Unknown Error", error)
-          res.status(500).send(error)
-        })
-    })
+    }).catch(error => {
+        console.log("Unknown Error", error.response.data)
+        res.status(500).send(error.response.data)
+        return Promise.reject(error)
+      })
 
 }
 
