@@ -23,11 +23,15 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     user: auth.currentUser,
+    title: "Gather Play",
   },
   mutations: {
     changeAuthState (state, user) {
       state.user = user
     },
+    updateTitle (state, title) {
+      state.title = title
+    }
   },
   actions: {
   },

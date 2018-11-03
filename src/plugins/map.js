@@ -1,6 +1,5 @@
 import Leaflet from 'leaflet'
 
-
 const LocalStorageKeyPrefix = 'gatherplay_map_last_'
 const LocalStorageKey = Object.freeze({
   lng: LocalStorageKeyPrefix + 'lng',

@@ -87,11 +87,9 @@
 <script>
 import firebase, { db } from '@/plugins/firebase'
 import { mapState } from 'vuex'
-import VListTileAction from 'vuetify/src/components/VList/VListTileAction'
 
 export default {
   name: 'Playlist',
-  components: { VListTileAction },
   props: ['event', 'list', 'playing'],
   data () {
     return {
