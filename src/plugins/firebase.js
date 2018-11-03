@@ -1,14 +1,8 @@
-import firebase from 'firebase/app'
+import firebase from 'firebase'
 import firebaseui from 'firebaseui'
 import keys from '@/keys.json'
 import config from '@/config.json'
 
-import 'firebase/auth'
-import 'firebase/firestore'
-import 'firebase/functions'
-/*
-import 'firebase/messaging'
-*/
 firebase.initializeApp(keys.firebase)
 
 export default firebase

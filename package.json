@@ -6,8 +6,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "firebase": "firebase serve",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "firebase": "firebase serve"
   },
   "dependencies": {
     "@tweenjs/tween.js": "^17.2.0",
@@ -40,6 +40,8 @@
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "vue-cli-plugin-vuetify": "^0.2.1",
-    "vue-template-compiler": "^2.5.17"
+    "vue-cli-plugin-webpack-bundle-analyzer": "^1.2.0",
+    "vue-template-compiler": "^2.5.17",
+    "webpack-cdn-plugin": "Neo-Zhixing/webpack-cdn-plugin"
   }
 }

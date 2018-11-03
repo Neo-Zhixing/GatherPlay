@@ -8,23 +8,27 @@ node_js: lts/*
 branches:
   only:
   - master
-  - release
+  - /^release/.*$/
   - develop
 install:
 - yarn install
 - cd ./functions && yarn install && cd ..
-script:
-- yarn build
-deploy:
-- provider: firebase
-  message: >
-    Deployed by Travis CI Job $TRAVIS_JOB_NUMBER ($TRAVIS_JOB_WEB_URL).
-    Triggered by a $TRAVIS_EVENT_TYPE from GitHub Repo $TRAVIS_REPO_SLUG.
-    $TRAVIS_COMMIT :  $TRAVIS_COMMIT_MESSAGE
-
-  skip_cleanup: true
-  on:
-    repo: Neo-Zhixing/GatherPlay
-    branch: release
-  token: $FIREBASE_DEPLOY_TOKEN
-  edge: true #Workaround for https://github.com/travis-ci/dpl/issues/890
+jobs:
+  include:
+  - stage: Deploy
+    script:
+    - yarn build
+    before_deploy:
+    - rm dist/report.html
+    deploy:
+    - provider: firebase
+      message: >
+        Deployed by Travis CI Job $TRAVIS_JOB_NUMBER ($TRAVIS_JOB_WEB_URL).
+        Triggered by a $TRAVIS_EVENT_TYPE from GitHub Repo $TRAVIS_REPO_SLUG.
+        $TRAVIS_COMMIT :  $TRAVIS_COMMIT_MESSAGE
+      skip_cleanup: true
+      on:
+        repo: Neo-Zhixing/GatherPlay
+        branch: master
+      token: $FIREBASE_DEPLOY_TOKEN
+      edge: true #Workaround for https://github.com/travis-ci/dpl/issues/890

@@ -1,5 +1,4 @@
 import Leaflet from 'leaflet'
-import 'leaflet/dist/leaflet.css'
 
 
 const LocalStorageKeyPrefix = 'gatherplay_map_last_'
@@ -68,5 +67,3 @@ export default class LeafletMap {
     if (this.locationFound) this.locationFound(event.latlng)
   }
 }
-
-
