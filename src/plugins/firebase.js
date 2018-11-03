@@ -1,9 +1,6 @@
 import firebase from 'firebase'
 import firebaseui from 'firebaseui'
-import keys from '@/keys.json'
-import config from '@/config.json'
-
-firebase.initializeApp(keys.firebase)
+import 'firebase-init'
 
 export default firebase
 
@@ -18,7 +15,7 @@ db.settings(dbSettings)
 export const auth = firebase.auth()
 
 export const functions = firebase.functions()
-functions.emulatorOrigin = config.func_emulator_host || null
+functions.emulatorOrigin = process.env.VUE_APP_FUNC_EMULATOR_HOST || null
 
 export const AuthUI = new firebaseui.auth.AuthUI(firebase.auth())
 

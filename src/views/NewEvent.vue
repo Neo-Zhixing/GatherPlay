@@ -77,7 +77,6 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import config from '@/config.json'
 import firebase, { db } from '@/plugins/firebase'
 const authOptions = [
   { text: 'Open', value: 0, des: 'Anyone can join the event' },
@@ -165,7 +164,7 @@ export default {
         (!this.form.approval_needed || this.form.authentication === 3 ? '.' : ' with your approval.')
     },
     eventLink () {
-      return config.host + '/e/' + this.eventID
+      return process.env.VUE_APP_HOST + '/e/' + this.eventID
     },
     rules () {
       return [

@@ -32,3 +32,7 @@ jobs:
         branch: master
       token: $FIREBASE_DEPLOY_TOKEN
       edge: true #Workaround for https://github.com/travis-ci/dpl/issues/890
+notifications:
+  slack:
+    rooms:
+    - gather-play:$SLACK_TOKEN#develop

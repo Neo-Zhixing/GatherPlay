@@ -6,8 +6,9 @@ module.exports = {
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
-        ws: true,
-        changeOrigin: true
+      },
+      '/__': {
+        target: 'http://localhost:5000',
       },
     },
     setup (app) {
@@ -20,6 +21,7 @@ module.exports = {
       new WebpackCdnPlugin({
         publicPath: '/node_modules',
         prod: process.env.NODE_ENV === 'production',
+        prodUrl: '//cdn.jsdelivr.net/npm/:name@:version/:path',
         modules: [
           { name: 'vue', var: 'Vue', path: 'dist/vue.runtime.min.js' },
           { name: 'vue-router', var: 'VueRouter', path: 'dist/vue-router.min.js' },
@@ -30,8 +32,14 @@ module.exports = {
           {
             name: 'firebaseui',
             path: 'firebaseui.js',
+            prodUrl: '//www.gstatic.com/firebasejs/ui/:version/firebase-ui-auth.js',
+            devUrl: ':name/dist/:path',
+          },
+          {
+            name: 'firebaseui',
             style: 'firebaseui.css',
-            prodUrl: 'https://cdn.firebase.com/libs/firebaseui/:version/:path',
+            cssOnly: true,
+            prodUrl: '//www.gstatic.com/firebasejs/ui/:version/firebase-ui-auth.css',
             devUrl: ':name/dist/:path',
           },
           {
@@ -43,7 +51,14 @@ module.exports = {
               'firebase-firestore.js',
               'firebase-functions.js',
             ],
-            prodUrl: 'https://www.gstatic.com/firebasejs/:version/:path',
+            prodUrl: '//www.gstatic.com/firebasejs/:version/:path',
+          },
+          {
+            name: 'firebase-init',
+            var: 'firebase',
+            path: 'init.js',
+            prodUrl: '/__/firebase/:path',
+            devUrl: 'firebaseInit.js',
           },
         ],
       }),

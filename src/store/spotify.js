@@ -1,7 +1,5 @@
 import axios from 'axios'
 
-import keys from '@/keys.json'
-import configs from '@/config.json'
 import { auth, functions } from '@/plugins/firebase'
 
 import store from './index'
@@ -29,6 +27,14 @@ auth.onAuthStateChanged(user => {
 
 export const GetClientCredentials = functions.httpsCallable('spotifyClientCredentials')
 export const RefreshToken = functions.httpsCallable('spotifyRefreshToken')
+
+const spotifyScope = [
+  "user-read-private",
+  "user-read-email",
+  "user-modify-playback-state",
+  "user-read-currently-playing",
+  "user-read-playback-state"
+]
 
 export default {
   namespaced: true,
@@ -58,20 +64,19 @@ export default {
     login ({ commit }) {
       const theURL = 'https://accounts.spotify.com/authorize?' + encodeURL({
         response_type: 'code',
-        client_id: keys.spotify.client_id,
-        scope: keys.spotify.scopes.join(' '),
-        redirect_uri: configs.func_host + configs.func_base_url + '/spotify/auth',
+        client_id: process.env.VUE_APP_SPOTIFY_CLIENT_ID,
+        scope: spotifyScope,
+        redirect_uri: process.env.VUE_APP_FUNC_HOST + process.env.VUE_APP_FUNC_BASE + '/spotify/auth',
       })
       const newWindow = window.open(theURL, 'spotify-login', 'height=500,width=700')
       if (window.focus) newWindow.focus()
 
       return new Promise((resolve, reject) => {
         function spotifyLoginCallback (event) {
-          if (event.origin !== configs.func_host) {
+          if (event.origin !== process.env.VUE_APP_FUNC_HOST) {
             return
           }
           window.removeEventListener('message', spotifyLoginCallback, false)
-          console.log(event.data)
           auth.signInWithCustomToken(event.data.token)
           commit('authenticate', event.data.spotify)
           resolve(event.data.spotify)
