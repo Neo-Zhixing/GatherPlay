@@ -66,7 +66,7 @@ export default {
         response_type: 'code',
         client_id: process.env.VUE_APP_SPOTIFY_CLIENT_ID,
         scope: spotifyScope,
-        redirect_uri: process.env.VUE_APP_FUNC_HOST + process.env.VUE_APP_FUNC_BASE + '/spotify/auth',
+        redirect_uri: process.env.VUE_APP_FUNC_HOST + process.env.VUE_APP_FUNC_BASE + '/spotify/auth/login',
       })
       const newWindow = window.open(theURL, 'spotify-login', 'height=500,width=700')
       if (window.focus) newWindow.focus()
