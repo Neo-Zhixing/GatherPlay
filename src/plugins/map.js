@@ -13,8 +13,8 @@ function MaterialIcon (name) {
     html: name
   })
 }
-const MyLocationIcon = MaterialIcon('my_location')
-const MarkerIcon = MaterialIcon('location_on')
+export const MyLocationIcon = MaterialIcon('my_location')
+export const MarkerIcon = MaterialIcon('location_on')
 Leaflet.Marker.prototype.options.icon = MarkerIcon
 
 export default class LeafletMap {
@@ -67,3 +67,12 @@ export default class LeafletMap {
     if (this.locationFound) this.locationFound(event.latlng)
   }
 }
+
+export const tileProviders = [
+  {
+    name: 'OpenStreetMap',
+    attribution: '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+  },
+]
+export const tileProvider = tileProviders[0]
