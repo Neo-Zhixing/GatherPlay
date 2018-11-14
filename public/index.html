@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons">
-    <title><%- VUE_APP_NAME %></title>
+    <title><%= htmlWebpackPlugin.options.title %></title>
     <% if (NODE_ENV === 'production') { %>
     <script async src="https://www.googletagmanager.com/gtag/js?id=<%= VUE_APP_GOOGLE_ANALYTICS_ID %>"></script>
     <script>

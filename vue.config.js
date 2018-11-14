@@ -22,6 +22,7 @@ module.exports = {
         publicPath: '/node_modules',
         prod: process.env.NODE_ENV === 'production',
         prodUrl: '//cdn.jsdelivr.net/npm/:name@:version/:path',
+        optimize: true,
         modules: [
           { name: 'vue', var: 'Vue', path: 'dist/vue.runtime.min.js' },
           { name: 'vue-router', var: 'VueRouter', path: 'dist/vue-router.min.js' },

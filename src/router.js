@@ -23,7 +23,7 @@ export default new Router({
     {
       path: '/',
       name: 'visualization',
-      component: () => import(/* webpackChunkName: "visualization" */ '@/views/Visualization.vue'),
+      component: () => import(/* webpackChunkName: "event" */ '@/views/Visualization.vue'),
     },
   ]
 })
