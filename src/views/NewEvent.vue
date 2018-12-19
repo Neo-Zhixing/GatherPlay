@@ -126,7 +126,7 @@ export default {
     }),
     createEvent () {
       if (!this.user || this.user.isAnonymous) {
-        console.error("Unauthenticated user attempted creating new event", this.user)
+        console.error('Unauthenticated user attempted creating new event', this.user)
         return
       }
       this.loading = true

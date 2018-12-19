@@ -23,7 +23,7 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     user: auth.currentUser,
-    title: "Gather Play",
+    title: 'Gather Play',
   },
   mutations: {
     changeAuthState (state, user) {

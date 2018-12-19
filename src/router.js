@@ -29,7 +29,7 @@ const router = new Router({
 })
 router.afterEach((to, from) => {
   const title = to.meta.title
-  const titleToSet = typeof title === "function" ? title() : title
+  const titleToSet = typeof title === 'function' ? title() : title
   document.title = (titleToSet ? (titleToSet + ' - ') : '') + 'GatherPlay'
   if (title !== null) store.commit('updateTitle', titleToSet || 'Gather Play')
 })
