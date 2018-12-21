@@ -61,6 +61,9 @@
           :item-value="a => a"
           :search-input.sync="trackSearch.keyword"
           v-model="trackSearch.result"
+          hide-no-data
+          hide-details
+          no-filter
         >
           <template
             slot="item"
@@ -91,16 +94,14 @@ import { mapState } from 'vuex'
 export default {
   name: 'Playlist',
   props: ['event', 'list', 'playing'],
-  data () {
-    return {
-      trackSearch: {
-        loading: false,
-        items: [],
-        keyword: null,
-        result: null,
-      },
-    }
-  },
+  data: () => ({
+    trackSearch: {
+      loading: false,
+      items: [],
+      keyword: null,
+      result: null,
+    },
+  }),
   watch: {
     'trackSearch.keyword' (keyword) {
       !this.trackSearch.loading && keyword && keyword !== this.trackSearch.result && this.search(keyword)
@@ -125,7 +126,7 @@ export default {
     },
     search (keyword) {
       this.trackSearch.loading = true
-      this.$store.getters['spotify/client']
+      this.$store.dispatch('spotify/request')
         .then(client => {
           return client.get('/search', {
             params: {
