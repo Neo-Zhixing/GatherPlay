@@ -8,7 +8,7 @@
     v-dialog(lazy v-model="loginDialog" max-width="400px")
       v-card
         v-card-text
-          user-login
+          user-login(@loggedIn="loginDialog=false")
     v-list-group(v-if="user" lazy no-action)
       v-list-tile(slot="activator" avatar)
         v-list-tile-avatar

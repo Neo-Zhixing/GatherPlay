@@ -7,7 +7,7 @@
     <v-card class="mt-5">
       <v-card-title class="headline font-weight-black white black--text ml-3 pt-5"
                     style="font-size: 40px !important; line-height: 1.05 !important;">
-        {{event.toUpperCase()}} Playlist
+        SOme event Playlist
       </v-card-title>
       <v-card-text>
         <v-list>
@@ -88,12 +88,12 @@
 </template>
 
 <script>
-import firebase, { db } from '@/plugins/firebase'
-import { mapState } from 'vuex'
-
 export default {
   name: 'Playlist',
-  props: ['event', 'list', 'playing'],
+  props: {
+    list: Array,
+    playing: Object,
+  },
   data: () => ({
     trackSearch: {
       loading: false,
@@ -109,20 +109,7 @@ export default {
   },
   methods: {
     skip () {
-      this.$store.getters['spotify/client']
-        .then(client => {
-          return client.put('/me/player/play', {
-            uris: [this.list[0].uri]
-          })
-        })
-        .then(() => {
-          return db.collection('events').doc(this.$route.params.event_id).update({
-            playlist: firebase.firestore.FieldValue.arrayRemove(this.list[0]),
-          })
-        })
-    },
-    login () {
-      this.$store.dispatch('spotify/login')
+      this.$emit('skip', this.list[0])
     },
     search (keyword) {
       this.trackSearch.loading = true
@@ -144,16 +131,11 @@ export default {
         })
     },
     addTrack () {
-      this.trackSearch.result.proposer = this.user.uid
-      db.collection('events').doc(this.event).update({
-        playlist: firebase.firestore.FieldValue.arrayUnion(this.trackSearch.result)
-      })
+      this.$emit('add', this.trackSearch.result)
       this.trackSearch.result = null
     },
     removeTrack (track) {
-      db.collection('events').doc(this.event).update({
-        playlist: firebase.firestore.FieldValue.arrayRemove(track)
-      })
+      this.$emit('remove', track)
     }
   },
   computed: {

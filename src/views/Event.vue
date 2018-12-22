@@ -1,7 +1,13 @@
 <template lang="pug">
  v-container: v-layout(row wrap v-if="doc")
      v-flex(md8 xs12)
-        playlist(:list="doc.playlist" :event="$route.params.event_id" :playing="doc.playingTrack")
+        playlist(
+          :list="doc.playlist"
+          :playing="doc.playingTrack"
+          @remove="removeTrack"
+          @add="addTrack"
+          @skip="skip"
+        )
 </template>
 
 <script>
@@ -49,7 +55,36 @@ export default {
       })
   },
   mounted () {
-
+    this.firebaseUnsubscribe = this.document.onSnapshot(doc => this.doc = doc.data())
+  },
+  beforeDestroy () {
+    if (this.firebaseUnsubscribe) this.firebaseUnsubscribe()
+  },
+  methods: {
+    skip () {
+      this.$store.getters['spotify/client']
+        .then(client => {
+          return client.put('/me/player/play', {
+            uris: [this.list[0].uri]
+          })
+        })
+        .then(() => {
+          return this.document.update({
+            playlist: firebase.firestore.FieldValue.arrayRemove(this.list[0]),
+          })
+        })
+    },
+    addTrack (track) {
+      track.proposer = this.user.uid
+      this.document.update({
+        playlist: firebase.firestore.FieldValue.arrayUnion(track)
+      })
+    },
+    removeTrack (track) {
+      this.document.update({
+        playlist: firebase.firestore.FieldValue.arrayRemove(track)
+      })
+    },
   },
   watch: {
     doc (doc) {
@@ -57,6 +92,17 @@ export default {
         return
       }
       this.$store.commit('updateTitle', doc.name)
+    },
+  },
+  computed: {
+    event () {
+      return this.$route.params.event_id
+    },
+    document () {
+      return db.collection('events').doc(this.event)
+    },
+    user () {
+      return this.$store.state.user
     },
   },
 }

@@ -34,6 +34,9 @@ export default {
     },
     spotifyLogin () {
       this.$store.dispatch('spotify/login')
+        .then(() => {
+          this.$emit('loggedIn')
+        })
     },
   }
 }

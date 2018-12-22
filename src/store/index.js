@@ -33,18 +33,18 @@ const store = new Vuex.Store({
       state.title = title
     }
   },
-  actions: {
-  },
-  modules: {
-    spotify: spotify,
-  },
   plugins: [
     vuexLocal.plugin,
   ],
 })
 
+store.registerModule('spotify', spotify(store))
+
 auth.onAuthStateChanged(user => {
   store.commit('changeAuthState', user)
+  if (!user) {
+    store.commit('spotify/updateToken', null)
+  }
 })
 
 export default store
