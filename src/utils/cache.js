@@ -29,7 +29,6 @@ export class Cache {
     return ttl
   }
   flush () {
-    console.log('flush')
     this.itemContainer.delete()
     this.ttlContainer.delete()
   }

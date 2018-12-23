@@ -56,7 +56,8 @@ export default {
   },
   mounted () {
     this.firebaseUnsubscribe = this.document.onSnapshot(doc => this.doc = doc.data())
-    this.synchronizer = new SpotifyPullSynchronizer(this.$store.getters['spotify/provider'])
+    this.synchronizer = new SpotifyPullSynchronizer(this.provider)
+    this.synchronizer.delegate = this
     this.synchronizer.start()
   },
   beforeDestroy () {
@@ -64,19 +65,10 @@ export default {
   },
   methods: {
     skip () {
-      this.$store.getters['spotify/client']
-        .then(client => {
-          return client.put('/me/player/play', {
-            uris: [this.list[0].uri]
-          })
-        })
-        .then(() => {
-          return this.document.update({
-            playlist: firebase.firestore.FieldValue.arrayRemove(this.list[0]),
-          })
-        })
+      // TODO
     },
     addTrack (track) {
+      // TODO Simplify the information saved in db
       track.proposer = this.user.uid
       this.document.update({
         playlist: firebase.firestore.FieldValue.arrayUnion(track)
@@ -85,6 +77,23 @@ export default {
     removeTrack (track) {
       this.document.update({
         playlist: firebase.firestore.FieldValue.arrayRemove(track)
+      })
+    },
+    load(track, progress, playing) {
+      // TODO Simplify the information saved in db
+      // TODO Move the entire thing based on websocket.
+      console.log('Load new song and write to db', track)
+      this.document.update({
+        playingTrack: track,
+        playbackProgress: progress,
+        playing: playing,
+      })
+    },
+    seek (progress, playing) {
+      console.log('Write to db,', progress)
+      this.document.update({
+        playbackProgress: progress,
+        playing: playing
       })
     },
   },
@@ -105,6 +114,9 @@ export default {
     },
     user () {
       return this.$store.state.user
+    },
+    provider () {
+      return this.$store.getters['spotify/provider']
     },
   },
 }

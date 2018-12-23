@@ -7,6 +7,7 @@ export default class SpotifyPullSynchronizer {
     this.pullingInterval = pullingInterval
     this.provider = provider
   }
+  delegate = null
   start () {
     this._puller = setInterval(this.pull.bind(this), this.pullingInterval)
     this.pull()
@@ -15,13 +16,14 @@ export default class SpotifyPullSynchronizer {
     if (this._puller) clearInterval(this._puller)
   }
   async pull () {
-    const track = await this.provider.currentlyPlaying()
+    const playback = await this.provider.currentlyPlaying()
+    const track = playback.item
     if (this.track && (this.track.id === track.id)) {
       // Still play the last one
-      this.delegate.seek(playback.progress_ms)
+      if (this.delegate) this.delegate.seek(playback.progress_ms, playback.is_playing)
       return
     }
     this.track = track
-    this.delegate.load(track, playback.progress_ms)
+    if (this.delegate) this.delegate.load(track, playback.progress_ms, playback.is_playing)
   }
 }

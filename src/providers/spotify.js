@@ -69,14 +69,12 @@ export default class SpotifyProvider {
   /**
    * @return {Track}
    */
-  async currentlyPlaying () {
+  currentlyPlaying () {
     // TODO test when nothing's playing, the server could return 204
-    const response = await this.client.get('me/player/currently-playing')
-    const playback = response.data
-    if (!playback.is_playing) {
-      return null
-    }
-    return playback.item
+    return this.client.get('me/player/currently-playing')
+      .then(response => {
+        return response.data
+      })
   }
 
   /**

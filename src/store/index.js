@@ -9,11 +9,9 @@ Vue.config.devtools = true
 
 const vuexLocal = new VuexPersistence({
   storage: window.localStorage,
-  reducer: (state) => ({
+  reducer: state => ({
     user: state.user,
-    eventID: state.eventID,
     spotify: {
-      authenticated: state.spotify.authenticated,
       accessToken: state.spotify.accessToken,
       accessTokenExpires: state.spotify.accessTokenExpires,
     },
