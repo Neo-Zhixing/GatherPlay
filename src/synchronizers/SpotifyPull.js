@@ -1,5 +1,3 @@
-import axios from 'axios'
-
 export default class SpotifyPullSynchronizer {
   /**
    * @param provider SpotifyProvider where the synchronizer fetch data from

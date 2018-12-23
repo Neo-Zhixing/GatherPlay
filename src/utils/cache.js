@@ -29,6 +29,7 @@ export class Cache {
     return ttl
   }
   flush () {
+    console.log('flush')
     this.itemContainer.delete()
     this.ttlContainer.delete()
   }
@@ -65,7 +66,13 @@ class VuexStoreKey {
     this.commitKey = commitKey
   }
   get () {
-    return this.store.state[this.key]
+    const path = this.key.split('/')
+    let value = this.store.state
+    path.forEach(pathSeg => {
+      value = value[pathSeg]
+    })
+    console.log(value)
+    return value
   }
   set (value) {
     this.store.commit(this.commitKey, value)

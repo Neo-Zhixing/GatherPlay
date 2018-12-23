@@ -13,7 +13,7 @@
 <script>
 import { db } from '@/plugins/firebase'
 import Playlist from '@/components/Playlist.vue'
-
+import SpotifyPullSynchronizer from '@/synchronizers/SpotifyPull'
 export default {
   name: 'event',
   components: {
@@ -56,6 +56,8 @@ export default {
   },
   mounted () {
     this.firebaseUnsubscribe = this.document.onSnapshot(doc => this.doc = doc.data())
+    this.synchronizer = new SpotifyPullSynchronizer(this.$store.getters['spotify/provider'])
+    this.synchronizer.start()
   },
   beforeDestroy () {
     if (this.firebaseUnsubscribe) this.firebaseUnsubscribe()

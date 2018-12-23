@@ -1,3 +1,4 @@
+import axios from 'axios'
 import firebase from 'firebase'
 import firebaseui from 'firebaseui'
 import 'firebase-init'
@@ -49,3 +50,19 @@ export function LoadAuthUI (element, uiShown) {
     AuthUI.start(element, uiConfig)
   })
 }
+
+export const client = axios.create({
+  baseURL: process.env.VUE_APP_API_ENDPOINT,
+  timeout: 30000,
+  headers: {}
+})
+
+client.interceptors.request.use(config => {
+  // TODO: when user's not logged in, reject the request
+  return auth.currentUser
+    .getIdToken(/* forceRefresh */ false)
+    .then(idToken => {
+      config.headers['Authorization'] = 'Bearer ' + idToken
+      return config
+    })
+})

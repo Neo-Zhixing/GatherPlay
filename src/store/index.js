@@ -5,6 +5,8 @@ import VuexPersistence from 'vuex-persist'
 import { auth } from '@/plugins/firebase'
 import spotify from './spotify'
 
+Vue.config.devtools = true
+
 const vuexLocal = new VuexPersistence({
   storage: window.localStorage,
   reducer: (state) => ({

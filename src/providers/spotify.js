@@ -3,14 +3,8 @@ import axios from 'axios'
 import ColorThief from 'color-thief'
 const colorThief = new ColorThief()
 
-const appAuthEndpoint = axios.create({
-  baseURL: process.env.VUE_APP_API_ENDPOINT + '/spotify/auth',
-  timeout: 30000,
-  headers: {}
-})
-
 export default class SpotifyProvider {
-  constructor (cacheStore) {
+  constructor (cacheStore, apiEndpoint) {
     this.accessKey = cacheStore
     this.client = axios.create({
       baseURL: 'https://api.spotify.com/v1',
@@ -18,13 +12,16 @@ export default class SpotifyProvider {
       headers: {},
     })
     this.client.interceptors.request.use(async config => {
+      // TODO: resolve when request failed at this stage, the caller does not get an error.
+      // Instead they get a response with no data. (resposne.data = null)
       let accessKey = this.accessKey.get()
-      if (!accessKey) accessKey = await appAuthEndpoint.get('/refresh')
+      if (!accessKey) accessKey = await apiEndpoint.get('/spotify/auth/refresh')
         .catch(error => {
           // TODO: change status code to 404
           // retry with client credential
-          if (error.response && error.response.status === 401 && config.fallbackClientCredential)
-            return appAuthEndpoint.get('/client-credential')
+          if (error.response && error.response.status === 401 && config.fallbackClientCredential) {
+            return apiEndpoint.get('/spotify/auth/client-credential')
+          }
           else return Promise.reject(error)
         })
         .then(response => {
@@ -38,6 +35,7 @@ export default class SpotifyProvider {
       response => response,
       error => {
         // TODO: If the request was ever rejected for outdated codes, automatically refresh the token or prompt login.
+        return error
       }
     )
   }

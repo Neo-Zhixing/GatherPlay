@@ -1,4 +1,4 @@
-import { auth } from '@/plugins/firebase'
+import { auth, client } from '@/plugins/firebase'
 import SpotifyProvider from '@/providers/spotify'
 import { VuexStoreCache } from '@/utils/cache'
 
@@ -10,7 +10,8 @@ export default function (store) {
       'spotify/accessTokenExpires',
       'spotify/updateToken',
       'spotify/updateTokenExpires',
-    )
+    ),
+    client,
   )
   auth.onAuthStateChanged(user => {
     if (!user) {
@@ -32,12 +33,11 @@ export default function (store) {
       },
     },
     actions: {
-      login ({ commit }) {
+      login ({ getters }) {
         return provider.login()
           .then(data => {
             auth.signInWithCustomToken(data.token)
-            commit('updateToken', data.spotify.access_token)
-            commit('updateTokenExpires', data.spotify.expires_in)
+            getters.provider.accessKey.set(data.spotify.access_token, data.spotify.expires_in)
           })
       },
     },
