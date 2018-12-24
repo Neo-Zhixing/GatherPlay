@@ -113,22 +113,20 @@ export default {
     },
     search (keyword) {
       this.trackSearch.loading = true
-      this.$store.dispatch('spotify/request')
-        .then(client => {
-          return client.get('/search', {
-            params: {
-              q: keyword,
-              type: 'track',
-              limit: 5,
-            }
-          })
-        })
-        .then(response => {
-          this.trackSearch.items = response.data.tracks.items
-          this.trackSearch.loading = false
-        }).catch(error => {
-          this.trackSearch.loading = false
-        })
+      const provider = this.$store.getters['spotify/provider']
+      provider.client.get('/search', {
+        params: {
+          q: keyword,
+          type: 'track',
+          limit: 5,
+        }
+      })
+      .then(response => {
+        this.trackSearch.items = response.data.tracks.items
+        this.trackSearch.loading = false
+      }).catch(error => {
+        this.trackSearch.loading = false
+      })
     },
     addTrack () {
       this.$emit('add', this.trackSearch.result)

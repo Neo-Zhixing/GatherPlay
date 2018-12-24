@@ -83,6 +83,15 @@ export default {
       // TODO Simplify the information saved in db
       // TODO Move the entire thing based on websocket.
       console.log('Load new song and write to db', track)
+      if (!track) {
+        // Nothing is playing
+        this.document.update({
+          playingTrack: null,
+          playbackProgress: null,
+          playing: false,
+        })
+        return
+      }
       this.document.update({
         playingTrack: track,
         playbackProgress: progress,

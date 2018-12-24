@@ -70,9 +70,12 @@ export default class SpotifyProvider {
    * @return {Track}
    */
   currentlyPlaying () {
-    // TODO test when nothing's playing, the server could return 204
     return this.client.get('me/player/currently-playing')
       .then(response => {
+        if (response.status === 204) {
+          // Nothing is playing
+          return null
+        }
         return response.data
       })
   }
