@@ -1,27 +1,33 @@
 <template lang="pug">
- v-container: v-layout(row wrap v-if="doc")
-     v-flex(md8 xs12)
+  v-container: v-layout(row wrap v-if="event")
+    v-flex(md2 md3 sm4 xs12): playback(:playing="event.playingTrack")
+    v-flex(md8 xs12): v-card
+      v-card-title(primary-title): h3(class="headline") Playlist
+      v-card-text
         playlist(
-          :list="doc.playlist"
-          :playing="doc.playingTrack"
+          :list="event.playlist"
+          :playing="event.playingTrack"
           @remove="removeTrack"
-          @add="addTrack"
-          @skip="skip"
         )
+        music-input(@add="addTrack")
 </template>
 
 <script>
 import { db } from '@/plugins/firebase'
 import Playlist from '@/components/Playlist.vue'
+import MusicInput from '@/components/MusicInput.vue'
+import Playback from '@/components/Playback.vue'
 import SpotifyPullSynchronizer from '@/synchronizers/SpotifyPull'
 export default {
   name: 'event',
   components: {
     Playlist,
+    MusicInput,
+    Playback,
   },
   data () {
     return {
-      doc: null,
+      event: null,
     }
   },
   beforeRouteEnter (to, from, next) {
@@ -29,7 +35,7 @@ export default {
       .get()
       .then(doc => {
         if (doc.exists) {
-          next(vm => vm.doc = doc.data())
+          next(vm => vm.event = doc.data())
         } else {
           next(false)
         }
@@ -39,12 +45,12 @@ export default {
       })
   },
   beforeRouteUpdate (to, from, next) {
-    this.doc = null
+    this.event = null
     db.collection('events').doc(to.params['event_id'])
       .get()
       .then(doc => {
         if (doc.exists) {
-          this.doc = doc.data()
+          this.event = doc.data()
           next()
         } else {
           next(false)
@@ -55,7 +61,7 @@ export default {
       })
   },
   mounted () {
-    this.firebaseUnsubscribe = this.document.onSnapshot(doc => this.doc = doc.data())
+    this.firebaseUnsubscribe = this.document.onSnapshot(doc => this.event = doc.data())
     this.synchronizer = new SpotifyPullSynchronizer(this.provider)
     this.synchronizer.delegate = this
     this.synchronizer.start()
@@ -107,19 +113,19 @@ export default {
     },
   },
   watch: {
-    doc (doc) {
-      if (!doc) {
+    event (event) {
+      if (!event) {
         return
       }
-      this.$store.commit('updateTitle', doc.name)
+      this.$store.commit('updateTitle', event.name)
     },
   },
   computed: {
-    event () {
+    eventID () {
       return this.$route.params.event_id
     },
     document () {
-      return db.collection('events').doc(this.event)
+      return db.collection('events').doc(this.eventID)
     },
     user () {
       return this.$store.state.user
