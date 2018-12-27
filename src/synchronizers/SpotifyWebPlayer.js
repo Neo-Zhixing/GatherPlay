@@ -26,6 +26,7 @@ export default class SpotifyWebPlayer {
             callback(accessKey)
           }
         })
+        this.player = player
 
         // Error handling
         player.addListener('initialization_error', ({ message }) => { console.error(message); });
@@ -52,9 +53,9 @@ export default class SpotifyWebPlayer {
   }
 
   update (state) {
-    if (false) {
+    if (!state) { // This case would probably never happen. IDK.
       // Nothing is playing
-      if (this.track == false)
+      if (this.track === false)
         if (this.delegate) this.delegate.load(null) // Last time it was playing; load nothing
       this.track = false
       return
@@ -69,6 +70,4 @@ export default class SpotifyWebPlayer {
     this.track = track
     if (this.delegate) this.delegate.load(track, state.position, !state.paused)
   }
-
-
 }

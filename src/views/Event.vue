@@ -1,6 +1,13 @@
 <template lang="pug">
   v-container: v-layout(row wrap v-if="event")
-    v-flex(md2 md3 sm4 xs12): playback(:playing="event.playingTrack")
+    v-flex(md2 md3 sm4 xs12)
+      playback(
+        :track="event.playingTrack"
+        :playing="event.playing"
+        @skip="skip"
+        @pause="toggle(false)"
+        @resume="toggle(true)"
+      )
     v-flex(md8 xs12): v-card
       v-card-title(primary-title): h3(class="headline") Playlist
       v-card-text
@@ -33,9 +40,11 @@ export default {
     }
   },
   beforeRouteEnter (to, from, next) {
+    console.log('start entering')
     db.collection('events').doc(to.params['event_id'])
       .get()
       .then(doc => {
+        console.log('end entering')
         if (doc.exists) {
           next(vm => vm.event = doc.data())
         } else {
@@ -75,7 +84,14 @@ export default {
   },
   methods: {
     skip () {
-      // TODO
+      this.synchronizer.player.nextTrack()
+    },
+    toggle (play) {
+      if (play) {
+        this.synchronizer.player.resume()
+      } else {
+        this.synchronizer.player.pause()
+      }
     },
     addTrack (track) {
       // TODO Simplify the information saved in db
