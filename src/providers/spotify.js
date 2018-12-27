@@ -6,6 +6,7 @@ const colorThief = new ColorThief()
 export default class SpotifyProvider {
   constructor (cacheStore, apiEndpoint) {
     this.accessKey = cacheStore
+    this.apiEndpoint = apiEndpoint
     this.client = axios.create({
       baseURL: 'https://api.spotify.com/v1',
       timeout: 10000,
@@ -17,7 +18,6 @@ export default class SpotifyProvider {
       let accessKey = this.accessKey.get()
       if (!accessKey) accessKey = await apiEndpoint.get('/spotify/auth/refresh')
         .catch(error => {
-          // TODO: change status code to 404
           // retry with client credential
           if (error.response && error.response.status === 401 && config.fallbackClientCredential) {
             return apiEndpoint.get('/spotify/auth/client-credential')

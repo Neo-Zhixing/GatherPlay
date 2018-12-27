@@ -18,6 +18,8 @@ import Playlist from '@/components/Playlist.vue'
 import MusicInput from '@/components/MusicInput.vue'
 import Playback from '@/components/Playback.vue'
 import SpotifyPullSynchronizer from '@/synchronizers/SpotifyPull'
+import SpotifyWebPlayerProvider from '@/synchronizers/SpotifyWebPlayer'
+
 export default {
   name: 'event',
   components: {
@@ -62,9 +64,11 @@ export default {
   },
   mounted () {
     this.firebaseUnsubscribe = this.document.onSnapshot(doc => this.event = doc.data())
-    this.synchronizer = new SpotifyPullSynchronizer(this.provider)
+    // this.synchronizer = new SpotifyPullSynchronizer(this.provider)
+    this.synchronizer = new SpotifyWebPlayerProvider(this.provider)
     this.synchronizer.delegate = this
-    this.synchronizer.start()
+    // this.synchronizer.start()
+
   },
   beforeDestroy () {
     if (this.firebaseUnsubscribe) this.firebaseUnsubscribe()
