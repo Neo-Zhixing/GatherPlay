@@ -19,7 +19,7 @@ export default class SpotifyPullSynchronizer {
     const playback = await this.provider.currentlyPlaying()
     if (!playback) {
       // Nothing is playing
-      if (this.track == false)
+      if (this.track !== false)
         if (this.delegate) this.delegate.load(null) // Last time it was playing; load nothing
       this.track = false
       return

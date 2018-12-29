@@ -1,3 +1,18 @@
+export class Key {
+  constructor () {
+    this.value = null
+  }
+  get () {
+    return this.value
+  }
+  set (value) {
+    this.value = value
+  }
+  delete () {
+    this.value = null
+  }
+}
+
 export class Cache {
   constructor (item, ttl) {
     this.itemContainer = item
@@ -58,26 +73,24 @@ export class StorageCache extends Cache {
 }
 
 
-class VuexStoreKey {
+export class VuexStoreKey extends Key {
   constructor (store, key, commitKey) {
+    super()
     this.store = store
     this.key = key
     this.commitKey = commitKey
   }
-  get () {
+  get value () {
+    if (!this.store) return null
     const path = this.key.split('/')
     let value = this.store.state
     path.forEach(pathSeg => {
       value = value[pathSeg]
     })
-    console.log(value)
     return value
   }
-  set (value) {
-    this.store.commit(this.commitKey, value)
-  }
-  delete () {
-    this.store.commit(this.commitKey, null)
+  set value (value) {
+    if (this.store) this.store.commit(this.commitKey, value)
   }
 }
 export class VuexStoreCache extends Cache {

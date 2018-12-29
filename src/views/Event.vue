@@ -76,7 +76,10 @@ export default {
     // this.synchronizer = new SpotifyPullSynchronizer(this.provider)
     this.synchronizer = new SpotifyWebPlayerProvider(this.provider)
     this.synchronizer.delegate = this
-    // this.synchronizer.start()
+    this.synchronizer.onDeviceID = id => {
+      this.provider.deviceID = id
+    }
+    this.synchronizer.start()
 
   },
   beforeDestroy () {
@@ -138,6 +141,25 @@ export default {
         return
       }
       this.$store.commit('updateTitle', event.name)
+      if (!event.playlistID && !this.creatingPlaylist) {
+        /*
+        BUG WARNING: async problem
+        While we're requesting to create a new playlist, there might be a new document change coming in.
+        This would create duplicated playlist.
+        Workaround is creating a flag, this.creatingPlaylist.
+        Needs better solution.
+        */
+        this.creatingPlaylist = true
+        this.provider.createPlaylist({
+          name:'GatherPlay - ' + event.name,
+          public: false,
+          description: 'Buffer playlist automatically created by GatherPlay'
+        }).then(playlist => this.document.update({ playlistID: playlist.id }))
+          .then(() => this.creatingPlaylist = false)
+        return
+      }
+      console.log('updating the playlist')
+      this.provider.updatePlaylist(event.playlistID, event.playlist)
     },
   },
   computed: {

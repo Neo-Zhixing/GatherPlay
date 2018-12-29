@@ -1,6 +1,6 @@
 import { auth, client } from '@/plugins/firebase'
 import SpotifyProvider from '@/providers/spotify'
-import { VuexStoreCache } from '@/utils/cache'
+import { VuexStoreCache, VuexStoreKey } from '@/utils/cache'
 
 export default function (store) {
   const provider = new SpotifyProvider(
@@ -10,6 +10,11 @@ export default function (store) {
       'spotify/accessTokenExpires',
       'spotify/updateToken',
       'spotify/updateTokenExpires',
+    ),
+    new VuexStoreKey(
+      store,
+      'spotify/profile',
+      'spotify/updateProfile'
     ),
     client,
   )
@@ -21,6 +26,7 @@ export default function (store) {
   return {
     namespaced: true,
     state: {
+      profile: null,
       accessToken: null,
       accessTokenExpires: null, // The timestamp at which the token expires
     },
@@ -31,6 +37,9 @@ export default function (store) {
       updateTokenExpires (state, expires) {
         state.accessTokenExpires = expires
       },
+      updateProfile (state, profile) {
+        state.profile = profile
+      }
     },
     actions: {
       login ({ getters }) {

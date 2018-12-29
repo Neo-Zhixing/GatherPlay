@@ -4,8 +4,11 @@ import ColorThief from 'color-thief'
 const colorThief = new ColorThief()
 
 export default class SpotifyProvider {
-  constructor (cacheStore, apiEndpoint) {
-    this.accessKey = cacheStore
+  deviceID = null
+  profile = null
+  constructor (accessKeyStore, profileStore, apiEndpoint) {
+    this.accessKey = accessKeyStore
+    this.profile = profileStore
     this.apiEndpoint = apiEndpoint
     this.client = axios.create({
       baseURL: 'https://api.spotify.com/v1',
@@ -40,6 +43,16 @@ export default class SpotifyProvider {
     )
   }
 
+  getProfile () {
+    const profile = this.profile.get()
+    if (profile) return Promise.resolve(profile)
+    return this.client.get('/me')
+      .then(response => {
+        this.profile.set(response.data)
+        return response.data
+      })
+  }
+
   login () {
     const newWindow = window.open(
       process.env.VUE_APP_API_ENDPOINT + '/spotify/auth/login',
@@ -54,6 +67,7 @@ export default class SpotifyProvider {
         }
         window.removeEventListener('message', spotifyLoginCallback, false)
         this.accessKey.set(event.data.spotify.access_token, event.data.spotify.expires_in)
+        this.profile.set(event.data.spotify.profile)
         resolve(event.data)
       }
       window.addEventListener('message', spotifyLoginCallback, false)
@@ -70,7 +84,7 @@ export default class SpotifyProvider {
    * @return {Track}
    */
   currentlyPlaying () {
-    return this.client.get('me/player/currently-playing')
+    return this.client.get('/me/player/currently-playing')
       .then(response => {
         if (response.status === 204) {
           // Nothing is playing
@@ -78,6 +92,17 @@ export default class SpotifyProvider {
         }
         return response.data
       })
+  }
+
+  createPlaylist (options) {
+    return this.getProfile()
+      .then(profile => this.client.post(`/users/${profile.id}/playlists`, options))
+      .then(response => response.data)
+  }
+  updatePlaylist (playlistID, playlist) {
+    return this.client.put(`/playlists/${playlistID}/tracks`, {
+      uris: playlist.map(track => track.uri)
+    })
   }
 
   /**

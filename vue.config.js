@@ -11,6 +11,7 @@ module.exports = {
         target: 'http://localhost:5000',
       },
     },
+    public: 'http://localhost:8080',
     setup (app) {
       app.use('/node_modules', express.static('./node_modules'))
     },

@@ -2,6 +2,7 @@
   v-card(v-if="track")
     v-hover
       v-img(
+        :aspect-ratio="1"
         :class="`elevation-${hover ? 12 : 2}`"
         slot-scope="{ hover }"
         :src="track.album.images[0].url"

@@ -7,12 +7,16 @@ const loadSpotifyPlayerJS = new Promise((resolve, reject) => {
 
 export default class SpotifyWebPlayer {
   delegate = null
+  track = null
+  deviceID = null
   constructor (provider) {
     this.provider = provider
+  }
+  start () {
+    const provider = this.provider
     const keyStore = provider.accessKey
     const apiEndpoint = provider.apiEndpoint
-
-    loadSpotifyPlayerJS
+    return loadSpotifyPlayerJS
       .then(() => {
         const player = new Spotify.Player({
           name: 'Gather Play',
@@ -39,29 +43,47 @@ export default class SpotifyWebPlayer {
 
         // Ready
         player.addListener('ready', ({ device_id }) => {
+          this.deviceID = device_id
+          if (this.onDeviceID) this.onDeviceID(device_id)
           console.log('Ready with Device ID', device_id)
+          this.pull()
         })
 
         // Not Ready
         player.addListener('not_ready', ({ device_id }) => {
+          this.deviceID = device_id
+          if (this.onDeviceID) this.onDeviceID(device_id)
           console.log('Device ID has gone offline', device_id)
+          this.pull()
         })
 
         // Connect to the player!
         player.connect()
+          .then(success => {
+            if (!success) {
+              return new Promise.reject('error connecting to player')
+            }
+            return player.getCurrentState()
+          })
+          .then(this.update.bind(this))
       })
   }
 
+  pull () {
+    if (!this.player) {
+      return
+    }
+    this.player.getCurrentState().then(this.update.bind(this))
+  }
+
   update (state) {
-    if (!state) { // This case would probably never happen. IDK.
+    if (!state) {
       // Nothing is playing
-      if (this.track === false)
         if (this.delegate) this.delegate.load(null) // Last time it was playing; load nothing
-      this.track = false
+      this.track = null
       return
     }
     const track = state.track_window.current_track
-    console.log(track)
     if (this.track && (this.track.id === track.id)) {
       // Still play the last one
       if (this.delegate) this.delegate.seek(state.position, !state.paused)
