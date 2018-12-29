@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-
+import store from '@/store'
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
@@ -16,9 +16,21 @@ export default new Router({
       }
     },
     {
+      path: '/nearby',
+      name: 'nearby',
+      component: () => import(/* webpackChunkName: "event" */ '@/views/Nearby.vue')
+    },
+    {
       path: '/',
       name: 'visualization',
-      component: () => import(/* webpackChunkName: "visualization" */ '@/views/Visualization.vue'),
-    }
+      component: () => import(/* webpackChunkName: "event" */ '@/views/Visualization.vue'),
+    },
   ]
 })
+router.afterEach((to, from) => {
+  const title = to.meta.title
+  const titleToSet = typeof title === 'function' ? title() : title
+  document.title = (titleToSet ? (titleToSet + ' - ') : '') + 'GatherPlay'
+  if (title !== null) store.commit('updateTitle', titleToSet || 'Gather Play')
+})
+export default router

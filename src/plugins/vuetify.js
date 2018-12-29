@@ -24,6 +24,8 @@ import {
   VStepper,
   VTextarea,
   VSwitch,
+  VImg,
+  VHover,
   transitions
 } from 'vuetify'
 import 'vuetify/src/stylus/app.styl'
@@ -53,7 +55,9 @@ Vue.use(Vuetify, {
     VStepper,
     VTextarea,
     VSwitch,
-    transitions
+    VImg,
+    VHover,
+    transitions,
   },
   theme: {
     primary: '#1E88E5',

@@ -8,7 +8,7 @@
     v-dialog(lazy v-model="loginDialog" max-width="400px")
       v-card
         v-card-text
-          user-login
+          user-login(@loggedIn="loginDialog=false")
     v-list-group(v-if="user" lazy no-action)
       v-list-tile(slot="activator" avatar)
         v-list-tile-avatar
@@ -35,12 +35,12 @@
         v-icon input
       v-list-tile-content
         v-list-tile-title Login
-    v-list-tile(avatar @click="newEventDialog = true")
+    v-list-tile(v-if="user && !user.isAnonymous" avatar @click="newEventDialog = true")
       v-list-tile-avatar
         v-icon library_add
       v-list-tile-content
         v-list-tile-title Create New Event
-    v-list-tile(avatar)
+    v-list-tile(avatar :to="{ name: 'nearby' }")
       v-list-tile-avatar
         v-icon near_me
       v-list-tile-content
@@ -75,7 +75,7 @@ export default {
     },
     created (eventID) {
       this.newEventDialog = false
-      this.$router.push({ name: 'event', params: { event_id: eventID }})
+      this.$router.push({ name: 'event', params: { event_id: eventID } })
     },
   },
   computed: mapState({

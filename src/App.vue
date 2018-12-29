@@ -16,7 +16,7 @@
       clipped-left
     )
       v-toolbar-side-icon(@click.stop="drawer = !drawer")
-      v-toolbar-title Gather Play
+      v-toolbar-title(v-text="title")
       v-spacer
       v-text-field(
         flat
@@ -43,5 +43,10 @@ export default {
       drawer: false,
     }
   },
+  computed: {
+    title () {
+      return this.$store.state.title
+    }
+  }
 }
 </script>

@@ -5,6 +5,7 @@ node_modules
 # Sensitive keys
 functions/service_account.json
 functions/.runtimeconfig.json
+src/plugins/firebaseInit.js
 
 # local env files
 .env.local
