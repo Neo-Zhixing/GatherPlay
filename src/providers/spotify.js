@@ -106,6 +106,36 @@ export default class SpotifyProvider {
   }
 
   /**
+   * Start playing context uri from track.
+   * @param uri
+   * @param track
+   */
+  play(tracks) {
+    const params = new URLSearchParams()
+    if (this.deviceID) params.append('device_id', this.deviceID)
+    return this.client.put('/me/player/play', {
+      uris: tracks.map(track => track.uri),
+    }, {
+      params: params
+    })
+  }
+
+  playingTrack = null
+  playTrack (track) {
+    if (this.playingTrack && this.playingTrack.uri === track.uri) {
+      return
+    }
+    this.playingTrack = track
+    const params = new URLSearchParams()
+    if (this.deviceID) params.append('device_id', this.deviceID)
+    return this.client.put('/me/player/play', {
+      uris: [track.uri],
+    }, {
+      params: params
+    })
+  }
+
+  /**
    * Obtain the lyrics for a track.
    * Search for the song on imjad.cn, and pick the first song for its lyrics.
    *

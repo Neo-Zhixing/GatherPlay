@@ -76,7 +76,7 @@ export default {
     // this.synchronizer = new SpotifyPullSynchronizer(this.provider)
     this.synchronizer = new SpotifyWebPlayerProvider(this.provider)
     this.synchronizer.delegate = this
-    this.synchronizer.onDeviceID = id => {
+    this.synchronizer.onready = (ready, id) => {
       this.provider.deviceID = id
     }
     this.synchronizer.start()
@@ -99,67 +99,57 @@ export default {
     addTrack (track) {
       // TODO Simplify the information saved in db
       track.proposer = this.user.uid
-      this.document.update({
+      return this.document.update({
         playlist: firebase.firestore.FieldValue.arrayUnion(track)
       })
     },
     removeTrack (track) {
-      this.document.update({
+      return this.document.update({
         playlist: firebase.firestore.FieldValue.arrayRemove(track)
       })
     },
-    load(track, progress, playing) {
+    load(track) {
       // TODO Simplify the information saved in db
       // TODO Move the entire thing based on websocket.
-      console.log('Load new song and write to db', track)
-      if (!track) {
-        // Nothing is playing
-        this.document.update({
-          playingTrack: null,
-          playbackProgress: null,
-          playing: false,
-        })
-        return
+      // TODO Because of the lack of Spotify Queue API, we're doing a workaround here.
+      // Check the status of the playback; push the next one when it's different from expected
+      console.log('loading')
+      if (!track || !this.event.playingTrack || track.uri !== this.event.playingTrack.uri) {
+        console.log('different from expected')
+        if (this.event.playlist.length <= 0) {
+          console.log('no next song. no other music in the playlist.')
+          this.document.update({
+            playingTrack: null,
+            playbackProgress: null,
+            playing: false,
+          })
+          return
+        }
+        const nextTrack = this.event.playlist[0]
+        console.log(track && track.uri, nextTrack.uri)
+        if (track && (track.uri === nextTrack.uri)) {
+          // Already start playing the next song.
+          console.log('updating db')
+          this.document.update({
+            playlist: firebase.firestore.FieldValue.arrayRemove(nextTrack),
+            playingTrack: nextTrack
+          })
+        } else {
+          console.log('push the music')
+          this.provider.playTrack(this.event.playlist[0])
+        }
       }
-      this.document.update({
-        playingTrack: track,
-        playbackProgress: progress,
-        playing: playing,
-      })
     },
-    seek (progress, playing) {
-      console.log('Write to db,', progress)
-      this.document.update({
-        playbackProgress: progress,
-        playing: playing
-      })
-    },
+    seek () {
+      console.log('seeking')
+    }
   },
   watch: {
-    event (event) {
+    event (event, oldEvent) {
       if (!event) {
         return
       }
       this.$store.commit('updateTitle', event.name)
-      if (!event.playlistID && !this.creatingPlaylist) {
-        /*
-        BUG WARNING: async problem
-        While we're requesting to create a new playlist, there might be a new document change coming in.
-        This would create duplicated playlist.
-        Workaround is creating a flag, this.creatingPlaylist.
-        Needs better solution.
-        */
-        this.creatingPlaylist = true
-        this.provider.createPlaylist({
-          name:'GatherPlay - ' + event.name,
-          public: false,
-          description: 'Buffer playlist automatically created by GatherPlay'
-        }).then(playlist => this.document.update({ playlistID: playlist.id }))
-          .then(() => this.creatingPlaylist = false)
-        return
-      }
-      console.log('updating the playlist')
-      this.provider.updatePlaylist(event.playlistID, event.playlist)
     },
   },
   computed: {
